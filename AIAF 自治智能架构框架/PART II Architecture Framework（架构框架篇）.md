@@ -640,4 +640,3 @@ Mission ──分解──► Goal ──驱动──► Capability ──承载
 
 ---
 
-已完成 **Part II 架构框架篇** 的详细编写，是否继续编写 **Part III Architecture Development Method（架构开发方法，即 AIAM）** 的完整内容？
