@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三大运营商全球网络时延与转发路径可视化</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg: #0a0e14;
+            --panel-bg: rgba(16, 20, 30, 0.94);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #c8ccd4;
+            --text-bright: #e8ecf2;
+            --text-dim: #88909c;
+            --telecom: #3b8bff;
+            --telecom-glow: rgba(59, 139, 255, 0.5);
+            --unicom: #e64539;
+            --unicom-glow: rgba(230, 69, 57, 0.5);
+            --mobile: #1dae5f;
+            --mobile-glow: rgba(29, 174, 95, 0.5);
+            --accent-telecom: #5a9fff;
+            --accent-unicom: #f06056;
+            --accent-mobile: #25c96d;
+            --node-export: #ffb347;
+            --node-relay: #7ec8e3;
+            --node-target: #b0b8c4;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --font-mono: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', 'Menlo', 'Consolas', monospace;
+            --font-sans: 'Inter', 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: var(--font-sans);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* ========== 地图区域 ========== */
+        #map-wrapper {
+            flex: 1;
+            position: relative;
+            min-width: 0;
+            background: #0d1117;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* 自定义地图暗色滤镜 */
+        #map.dark-tiles img.leaflet-tile {
+            filter: brightness(0.55) saturate(0.7) hue-rotate(180deg) invert(0.05);
+        }
+
+        /* Canvas叠加层 */
+        #arc-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 地图上的tooltip */
+        #map-tooltip {
+            position: absolute;
+            pointer-events: none;
+            z-index: 20;
+            background: rgba(10, 14, 22, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            color: var(--text-bright);
+            font-size: 13px;
+            opacity: 0;
+            transform: translate(-50%, -130%);
+            transition: opacity 0.15s ease;
+            white-space: nowrap;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            letter-spacing: 0.01em;
+        }
+        #map-tooltip.visible {
+            opacity: 1;
+        }
+        #map-tooltip .tt-title {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 4px;
+            letter-spacing: 0.02em;
+        }
+        #map-tooltip .tt-row {
+            display: flex;
+            gap: 8px;
+            font-size: 11.5px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        #map-tooltip .tt-row span {
+            color: var(--text-bright);
+            font-weight: 500;
+        }
+        #map-tooltip .tt-path {
+            font-size: 11px;
+            color: #8899aa;
+            margin-top: 4px;
+            max-width: 260px;
+            white-space: normal;
+            line-height: 1.45;
+        }
+
+        /* ========== 侧边栏 ========== */
+        #sidebar {
+            width: 440px;
+            min-width: 440px;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 15;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            overflow: hidden;
+            box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
+            transition: transform var(--transition-smooth);
+        }
+
+        #sidebar-header {
+            padding: 20px 24px 14px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        #sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: 0.03em;
+            margin-bottom: 2px;
+        }
+        #sidebar-header .subtitle {
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 0.02em;
+        }
+
+        /* 运营商切换标签 */
+        #operator-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+        .op-tab {
+            flex: 1;
+            min-width: 70px;
+            padding: 10px 8px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            transition: all var(--transition-fast);
+            text-align: center;
+            font-family: var(--font-sans);
+            white-space: nowrap;
+        }
+        .op-tab:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--text-bright);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .op-tab.active-telecom {
+            border-color: var(--telecom);
+            color: var(--telecom);
+            background: rgba(59, 139, 255, 0.08);
+            box-shadow: 0 0 18px var(--telecom-glow);
+        }
+        .op-tab.active-unicom {
+            border-color: var(--unicom);
+            color: var(--unicom);
+            background: rgba(230, 69, 57, 0.08);
+            box-shadow: 0 0 18px var(--unicom-glow);
+        }
+        .op-tab.active-mobile {
+            border-color: var(--mobile);
+            color: var(--mobile);
+            background: rgba(29, 174, 95, 0.08);
+            box-shadow: 0 0 18px var(--mobile-glow);
+        }
+
+        /* RTT表格容器 */
+        #table-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px 16px 20px;
+            scroll-behavior: smooth;
+        }
+        #table-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        #table-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #table-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        #table-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .rtt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+            letter-spacing: 0.015em;
+        }
+        .rtt-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--panel-bg);
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-dim);
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border);
+            z-index: 2;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .rtt-table tbody td {
+            padding: 9px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            vertical-align: top;
+            line-height: 1.4;
+        }
+        .rtt-table tbody tr {
+            transition: background var(--transition-fast);
+            cursor: pointer;
+        }
+        .rtt-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .rtt-table tbody tr.highlight-row {
+            background: rgba(255, 255, 255, 0.06);
+            outline: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+        .rtt-table .dest-name {
+            font-weight: 600;
+            color: var(--text-bright);
+            white-space: nowrap;
+        }
+        .rtt-table .rtt-val {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .rtt-table .path-desc {
+            font-size: 10.5px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+        .badge-telecom {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--telecom);
+            margin-right: 5px;
+            box-shadow: 0 0 6px var(--telecom-glow);
+            flex-shrink: 0;
+        }
+        .badge-unicom {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--unicom);
+            margin-right: 5px;
+            box-shadow: 0 0 6px var(--unicom-glow);
+            flex-shrink: 0;
+        }
+        .badge-mobile {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--mobile);
+            margin-right: 5px;
+            box-shadow: 0 0 6px var(--mobile-glow);
+            flex-shrink: 0;
+        }
+
+        /* 图例 */
+        #legend {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .legend-dot.export {
+            background: var(--node-export);
+            box-shadow: 0 0 8px rgba(255, 179, 71, 0.6);
+        }
+        .legend-dot.relay {
+            background: var(--node-relay);
+            box-shadow: 0 0 8px rgba(126, 200, 227, 0.5);
+        }
+        .legend-dot.target {
+            background: var(--node-target);
+            box-shadow: 0 0 6px rgba(176, 184, 196, 0.4);
+        }
+        .legend-line {
+            width: 20px;
+            height: 2.5px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            #app-container {
+                flex-direction: column;
+            }
+            #sidebar {
+                width: 100%;
+                min-width: 100%;
+                max-height: 45vh;
+                flex-shrink: 0;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+            }
+            #map-wrapper {
+                flex: 1;
+                min-height: 55vh;
+            }
+            #table-container {
+                max-height: 25vh;
+            }
+            #sidebar-header h1 {
+                font-size: 17px;
+            }
+        }
+        @media (max-width: 500px) {
+            #sidebar {
+                width: 100%;
+                min-width: 100%;
+                max-height: 40vh;
+            }
+            #map-wrapper {
+                min-height: 60vh;
+            }
+            #table-container {
+                max-height: 20vh;
+            }
+            #sidebar-header {
+                padding: 12px 14px 8px;
+            }
+            #operator-tabs {
+                padding: 8px 14px;
+                gap: 4px;
+            }
+            .op-tab {
+                font-size: 11px;
+                padding: 8px 6px;
+            }
+            .rtt-table {
+                font-size: 10px;
+            }
+            .rtt-table thead th,
+            .rtt-table tbody td {
+                padding: 6px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <!-- 地图区域 -->
+        <div id="map-wrapper">
+            <div id="map" class="dark-tiles"></div>
+            <canvas id="arc-canvas"></canvas>
+            <div id="map-tooltip">
+                <div class="tt-title"></div>
+                <div class="tt-row"></div>
+                <div class="tt-path"></div>
+            </div>
+        </div>
+
+        <!-- 侧边栏 -->
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <h1>🌐 全球网络时延可视化</h1>
+                <div class="subtitle">中国三大运营商 · 国际转发路径与RTT时延</div>
+            </div>
+            <div id="operator-tabs">
+                <button class="op-tab active-telecom" data-op="telecom">📡 中国电信</button>
+                <button class="op-tab" data-op="unicom">🔴 中国联通</button>
+                <button class="op-tab" data-op="mobile">🟢 中国移动</button>
+            </div>
+            <div id="table-container">
+                <table class="rtt-table" id="rtt-table">
+                    <thead>
+                        <tr>
+                            <th>目的地</th>
+                            <th>普通宽带RTT</th>
+                            <th>优质线路RTT</th>
+                            <th>转发路径</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rtt-tbody"></tbody>
+                </table>
+            </div>
+            <div id="legend">
+                <div class="legend-item"><span class="legend-dot export"></span> 出口节点</div>
+                <div class="legend-item"><span class="legend-dot relay"></span> 中转节点</div>
+                <div class="legend-item"><span class="legend-dot target"></span> 目标节点</div>
+                <div class="legend-item"><span class="legend-line" style="background:var(--telecom);"></span> 电信</div>
+                <div class="legend-item"><span class="legend-line" style="background:var(--unicom);"></span> 联通</div>
+                <div class="legend-item"><span class="legend-line" style="background:var(--mobile);"></span> 移动</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+    <script>
+        (function() {
+            // ==================== 数据定义 ====================
+            // 节点坐标
+            const nodes = {
+                // 中国出口节点
+                'beijing': { lat: 39.9, lng: 116.4, name: '北京', type: 'export' },
+                'shanghai': { lat: 31.2, lng: 121.5, name: '上海', type: 'export' },
+                'guangzhou': { lat: 23.1, lng: 113.3, name: '广州', type: 'export' },
+                'shenzhen': { lat: 22.55, lng: 114.05, name: '深圳', type: 'export' },
+                'qingdao': { lat: 36.1, lng: 120.4, name: '青岛', type: 'export' },
+                'kunming': { lat: 25.0, lng: 102.7, name: '昆明', type: 'export' },
+                // 中转节点
+                'hongkong': { lat: 22.3, lng: 114.17, name: '香港', type: 'relay' },
+                'singapore': { lat: 1.35, lng: 103.85, name: '新加坡', type: 'relay' },
+                // 目标节点
+                'taiwan': { lat: 25.03, lng: 121.5, name: '台湾·台北', type: 'target' },
+                'tokyo': { lat: 35.68, lng: 139.76, name: '日本·东京', type: 'target' },
+                'seoul': { lat: 37.57, lng: 126.98, name: '韩国·首尔', type: 'target' },
+                'losangeles': { lat: 33.94, lng: -118.4, name: '美国西海岸·洛杉矶', type: 'target' },
+                'newyork': { lat: 40.71, lng: -74.0, name: '美国东海岸·纽约', type: 'target' },
+                'london': { lat: 51.51, lng: -0.13, name: '英国·伦敦', type: 'target' },
+                'frankfurt': { lat: 50.11, lng: 8.68, name: '德国·法兰克福', type: 'target' },
+                'moscow': { lat: 55.76, lng: 37.62, name: '俄罗斯·莫斯科', type: 'target' },
+                'sydney': { lat: -33.87, lng: 151.21, name: '澳大利亚·悉尼', type: 'target' },
+                'auckland': { lat: -36.85, lng: 174.76, name: '新西兰·奥克兰', type: 'target' },
+                'dubai': { lat: 25.2, lng: 55.27, name: '阿联酋·迪拜', type: 'target' },
+                'johannesburg': { lat: -26.2, lng: 28.05, name: '南非·约翰内斯堡', type: 'target' },
+                'saopaulo': { lat: -23.55, lng: -46.63, name: '南美·圣保罗', type: 'target' },
+                'vietnam': { lat: 10.82, lng: 106.63, name: '越南·胡志明市', type: 'target' },
+                'thailand': { lat: 13.75, lng: 100.5, name: '泰国·曼谷', type: 'target' },
+            };
+
+            // 路径数据：每条路径定义 { id, segments: [[fromKey, toKey], ...], rttNormal, rttPremium, description }
+            // telecom 电信路径
+            const telecomPaths = [
+                { id: 't-hk', segments: [
+                        ['shenzhen', 'hongkong']
+                    ], rttNormal: '25–45ms', rttPremium: '15–30ms', desc: '广州/深圳出口，经深港海缆直连香港POP', dest: '香港' },
+                { id: 't-tw', segments: [
+                        ['shenzhen', 'taiwan']
+                    ], rttNormal: '30–55ms', rttPremium: '25–45ms', desc: '经海峡光缆（台北/淡水）直达，或经香港中转',
+                    dest: '台湾' },
+                { id: 't-jp', segments: [
+                        ['shanghai', 'tokyo']
+                    ], rttNormal: '35–65ms', rttPremium: '25–50ms', desc: '上海（崇明/南汇）出口，经APG、TPE等海缆直连东京/大阪',
+                    dest: '日本' },
+                { id: 't-kr', segments: [
+                        ['qingdao', 'seoul']
+                    ], rttNormal: '35–65ms', rttPremium: '25–50ms', desc: '青岛/上海出口，经中韩海缆（EAC-C2C等）至首尔', dest: '韩国' },
+                { id: 't-sg', segments: [
+                        ['shenzhen', 'singapore']
+                    ], rttNormal: '70–110ms', rttPremium: '55–80ms', desc: '广州/香港出口，经东南亚海缆（SEA-ME-WE、APG）直达新加坡',
+                    dest: '新加坡' },
+                { id: 't-vn', segments: [
+                        ['kunming', 'vietnam']
+                    ], rttNormal: '60–100ms', rttPremium: '50–80ms', desc: '广州/昆明陆缆出境，或经香港/新加坡海缆中转', dest: '越南/泰国' },
+                { id: 't-usw', segments: [
+                        ['shanghai', 'losangeles']
+                    ], rttNormal: '160–190ms', rttPremium: '145–165ms',
+                    desc: '上海（南汇）/深圳出口，经TPE、FASTER等跨太平洋海缆直连洛杉矶/圣何塞', dest: '美国西海岸' },
+                { id: 't-use', segments: [
+                        ['shanghai', 'losangeles'],
+                        ['losangeles', 'newyork']
+                    ], rttNormal: '200–250ms', rttPremium: '185–220ms', desc: '先至美西，再经美国内陆骨干至纽约/华盛顿', dest: '美国东海岸' },
+                { id: 't-uk', segments: [
+                        ['shanghai', 'singapore'],
+                        ['singapore', 'london']
+                    ], rttNormal: '190–240ms', rttPremium: '170–200ms',
+                    desc: '上海/深圳经海缆至新加坡，再经印度洋/地中海/大西洋至伦敦', dest: '英国/西欧' },
+                { id: 't-de', segments: [
+                        ['shanghai', 'singapore'],
+                        ['singapore', 'frankfurt']
+                    ], rttNormal: '190–240ms', rttPremium: '170–200ms', desc: '经新加坡中转，法兰克福为主要落地点', dest: '德国/中欧' },
+                { id: 't-ru', segments: [
+                        ['beijing', 'moscow']
+                    ], rttNormal: '200–260ms', rttPremium: '180–220ms', desc: '北京经中俄陆缆（二连浩特/满洲里）至莫斯科', dest: '东欧/俄罗斯' },
+                { id: 't-au', segments: [
+                        ['shenzhen', 'sydney']
+                    ], rttNormal: '150–190ms', rttPremium: '135–165ms', desc: '广州/香港出口，经南太平洋海缆至悉尼', dest: '澳大利亚' },
+                { id: 't-nz', segments: [
+                        ['shenzhen', 'sydney'],
+                        ['sydney', 'auckland']
+                    ], rttNormal: '160–210ms', rttPremium: '145–180ms', desc: '通常经悉尼中转，或个别海缆直达奥克兰', dest: '新西兰' },
+                { id: 't-ae', segments: [
+                        ['shenzhen', 'singapore'],
+                        ['singapore', 'dubai']
+                    ], rttNormal: '190–250ms', rttPremium: '170–220ms', desc: '经新加坡/印度洋海缆（SEA-ME-WE）至富吉拉/迪拜',
+                    dest: '阿联酋' },
+                { id: 't-za', segments: [
+                        ['shenzhen', 'singapore'],
+                        ['singapore', 'johannesburg']
+                    ], rttNormal: '260–350ms', rttPremium: '240–300ms', desc: '经新加坡/欧洲海缆站中转至开普敦/约翰内斯堡',
+                    dest: '南非' },
+                { id: 't-br', segments: [
+                        ['shanghai', 'losangeles'],
+                        ['losangeles', 'saopaulo']
+                    ], rttNormal: '260–350ms', rttPremium: '240–300ms', desc: '无直达海缆，经美国西海岸中转至巴西圣保罗',
+                    dest: '南美' },
+            ];
+
+            // 联通路径
+            const unicomPaths = [
+                { id: 'u-hk', segments: [
+                        ['shenzhen', 'hongkong']
+                    ], rttNormal: '20–40ms', rttPremium: '15–30ms', desc: '深圳/广州出口，直连香港POP', dest: '香港' },
+                { id: 'u-tw', segments: [
+                        ['shenzhen', 'taiwan']
+                    ], rttNormal: '35–60ms', rttPremium: '25–45ms', desc: '经海峡光缆或香港中转至台北', dest: '台湾' },
+                { id: 'u-jp', segments: [
+                        ['qingdao', 'tokyo']
+                    ], rttNormal: '30–55ms', rttPremium: '25–45ms', desc: '青岛/上海出口，经日韩海缆（EAC-C2C）直连东京', dest: '日本' },
+                { id: 'u-kr', segments: [
+                        ['qingdao', 'seoul']
+                    ], rttNormal: '30–55ms', rttPremium: '25–45ms', desc: '青岛出口为主，经中韩海缆至首尔', dest: '韩国' },
+                { id: 'u-sg', segments: [
+                        ['shenzhen', 'singapore']
+                    ], rttNormal: '75–120ms', rttPremium: '65–100ms', desc: '深圳/香港出口，经东南亚海缆（APG/SEA-ME-WE）至新加坡',
+                    dest: '新加坡' },
+                { id: 'u-vn', segments: [
+                        ['kunming', 'vietnam']
+                    ], rttNormal: '65–110ms', rttPremium: '55–90ms', desc: '昆明陆缆出境，或经香港/新加坡中转', dest: '越南/泰国' },
+                { id: 'u-usw', segments: [
+                        ['qingdao', 'losangeles']
+                    ], rttNormal: '160–200ms', rttPremium: '145–170ms',
+                    desc: '青岛/上海出口，经跨太平洋海缆（TPE/FASTER）直连洛杉矶/硅谷', dest: '美国西海岸' },
+                { id: 'u-use', segments: [
+                        ['qingdao', 'losangeles'],
+                        ['losangeles', 'newyork']
+                    ], rttNormal: '200–260ms', rttPremium: '185–220ms', desc: '先至美西，再经北美内陆延伸至纽约', dest: '美国东海岸' },
+                { id: 'u-uk', segments: [
+                        ['shanghai', 'singapore'],
+                        ['singapore', 'london']
+                    ], rttNormal: '175–230ms', rttPremium: '155–200ms', desc: '上海/深圳经新加坡海缆转接至伦敦', dest: '英国/西欧' },
+                { id: 'u-de', segments: [
+                        ['shanghai', 'singapore'],
+                        ['singapore', 'frankfurt']
+                    ], rttNormal: '175–230ms', rttPremium: '155–200ms', desc: '经新加坡中转，法兰克福为主要节点', dest: '德国/中欧' },
+                { id: 'u-ru', segments: [
+                        ['beijing', 'moscow']
+                    ], rttNormal: '190–250ms', rttPremium: '170–220ms', desc: '北京经中俄陆缆至莫斯科，海缆辅助', dest: '东欧/俄罗斯' },
+                { id: 'u-au', segments: [
+                        ['shenzhen', 'sydney']
+                    ], rttNormal: '160–200ms', rttPremium: '145–180ms', desc: '香港/深圳出口，经南太平洋海缆至悉尼', dest: '澳大利亚' },
+                { id: 'u-nz', segments: [
+                        ['shenzhen', 'sydney'],
+                        ['sydney', 'auckland']
+                    ], rttNormal: '170–220ms', rttPremium: '155–190ms', desc: '多经悉尼中转', dest: '新西兰' },
+                { id: 'u-ae', segments: [
+                        ['shenzhen', 'singapore'],
+                        ['singapore', 'dubai']
+                    ], rttNormal: '200–260ms', rttPremium: '180–230ms', desc: '经新加坡海缆中转至迪拜', dest: '阿联酋' },
+                { id: 'u-za', segments: [
+                        ['shenzhen', 'singapore'],
+                        ['singapore', 'johannesburg']
+                    ], rttNormal: '270–360ms', rttPremium: '240–310ms', desc: '经新加坡/欧洲海缆绕行至南非', dest: '南非' },
+                { id: 'u-br', segments: [
+                        ['qingdao', 'losangeles'],
+                        ['losangeles', 'saopaulo']
+                    ], rttNormal: '270–360ms', rttPremium: '240–310ms', desc: '经美国中转至巴西等主要城市', dest: '南美' },
+            ];
+
+            // 移动路径（多经香港CMI）
+            const mobilePaths = [
+                { id: 'm-hk', segments: [
+                        ['shenzhen', 'hongkong']
+                    ], rttNormal: '25–50ms', rttPremium: '15–35ms', desc: '广州/深圳出口直连，或直接由香港CMI枢纽接入', dest: '香港' },
+                { id: 'm-tw', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'taiwan']
+                    ], rttNormal: '40–70ms', rttPremium: '30–55ms', desc: '通常经香港CMI中转，或海峡光缆直达', dest: '台湾' },
+                { id: 'm-jp', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'tokyo']
+                    ], rttNormal: '35–75ms', rttPremium: '25–55ms', desc: '多经香港CMI汇接，再通过SJC海缆至东京', dest: '日本' },
+                { id: 'm-kr', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'seoul']
+                    ], rttNormal: '40–75ms', rttPremium: '30–55ms', desc: '经香港CMI或少量经青岛海缆直连首尔', dest: '韩国' },
+                { id: 'm-sg', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'singapore']
+                    ], rttNormal: '60–100ms', rttPremium: '50–80ms', desc: '香港CMI枢纽直连新加坡（SJC/APG海缆）', dest: '新加坡' },
+                { id: 'm-vn', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'vietnam']
+                    ], rttNormal: '65–110ms', rttPremium: '55–90ms', desc: '多数经香港CMI转接，部分从云南陆缆出境', dest: '越南/泰国' },
+                { id: 'm-usw', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'losangeles']
+                    ], rttNormal: '170–220ms', rttPremium: '150–190ms',
+                    desc: '主要经香港CMI转接跨太平洋海缆（FASTER/TPE）至洛杉矶', dest: '美国西海岸' },
+                { id: 'm-use', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'losangeles'],
+                        ['losangeles', 'newyork']
+                    ], rttNormal: '210–270ms', rttPremium: '190–240ms', desc: '西海岸落地后经北美内陆至纽约', dest: '美国东海岸' },
+                { id: 'm-uk', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'singapore'],
+                        ['singapore', 'london']
+                    ], rttNormal: '180–240ms', rttPremium: '165–210ms', desc: '香港CMI→新加坡→印度洋/地中海海缆至伦敦',
+                    dest: '英国/西欧' },
+                { id: 'm-de', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'singapore'],
+                        ['singapore', 'frankfurt']
+                    ], rttNormal: '185–245ms', rttPremium: '170–215ms', desc: '经香港CMI和新加坡中转，法兰克福为欧洲核心落地点',
+                    dest: '德国/中欧' },
+                { id: 'm-ru', segments: [
+                        ['beijing', 'moscow']
+                    ], rttNormal: '200–260ms', rttPremium: '185–230ms', desc: '北京经中俄陆缆至莫斯科，或经欧洲绕转', dest: '东欧/俄罗斯' },
+                { id: 'm-au', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'sydney']
+                    ], rttNormal: '160–210ms', rttPremium: '145–190ms', desc: '香港CMI经南太平洋海缆直连悉尼', dest: '澳大利亚' },
+                { id: 'm-nz', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'sydney'],
+                        ['sydney', 'auckland']
+                    ], rttNormal: '170–230ms', rttPremium: '155–200ms', desc: '悉尼中转或直达奥克兰', dest: '新西兰' },
+                { id: 'm-ae', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'singapore'],
+                        ['singapore', 'dubai']
+                    ], rttNormal: '200–260ms', rttPremium: '185–240ms', desc: '香港CMI经新加坡/印度洋海缆至迪拜', dest: '阿联酋' },
+                { id: 'm-za', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'singapore'],
+                        ['singapore', 'johannesburg']
+                    ], rttNormal: '280–360ms', rttPremium: '250–320ms', desc: '经新加坡/欧洲海缆中转，路径较长', dest: '南非' },
+                { id: 'm-br', segments: [
+                        ['shenzhen', 'hongkong'],
+                        ['hongkong', 'losangeles'],
+                        ['losangeles', 'saopaulo']
+                    ], rttNormal: '280–370ms', rttPremium: '250–330ms', desc: '经美国中转至巴西，无明显直连', dest: '南美' },
+            ];
+
+            const operatorConfig = {
+                telecom: {
+                    paths: telecomPaths,
+                    color: '#3b8bff',
+                    glow: 'rgba(59,139,255,0.45)',
+                    accent: '#5a9fff',
+                    name: '中国电信',
+                    cssClass: 'active-telecom',
+                    badgeClass: 'badge-telecom',
+                },
+                unicom: {
+                    paths: unicomPaths,
+                    color: '#e64539',
+                    glow: 'rgba(230,69,57,0.45)',
+                    accent: '#f06056',
+                    name: '中国联通',
+                    cssClass: 'active-unicom',
+                    badgeClass: 'badge-unicom',
+                },
+                mobile: {
+                    paths: mobilePaths,
+                    color: '#1dae5f',
+                    glow: 'rgba(29,174,95,0.45)',
+                    accent: '#25c96d',
+                    name: '中国移动',
+                    cssClass: 'active-mobile',
+                    badgeClass: 'badge-mobile',
+                },
+            };
+
+            let currentOperator = 'telecom';
+            let allPathData = []; // 当前渲染的路径段 [{fromKey, toKey, color, glow, pathId, rttNormal, rttPremium, desc, dest}]
+            let arcSegmentCache = []; // 缓存弧线的采样点用于hover检测
+
+            // ==================== 地图初始化 ====================
+            const map = L.map('map', {
+                center: [22, 50],
+                zoom: 3,
+                minZoom: 2,
+                maxZoom: 8,
+                zoomControl: true,
+                attributionControl: false,
+                worldCopyJump: true,
+            });
+
+            // 使用暗色地图瓦片
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                subdomains: 'abcd',
+                maxZoom: 19,
+            }).addTo(map);
+
+            // Canvas叠加层
+            const canvas = document.getElementById('arc-canvas');
+            const ctx = canvas.getContext('2d');
+            const tooltip = document.getElementById('map-tooltip');
+
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(dpr, dpr);
+            }
+            resizeCanvas();
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                drawAllArcs();
+            });
+
+            // ==================== 地图标记 ====================
+            const nodeMarkers = {};
+            const markerGroup = L.layerGroup().addTo(map);
+
+            function createNodeMarkers() {
+                markerGroup.clearLayers();
+                for (const [key, node] of Object.entries(nodes)) {
+                    let radius, color, glowColor, className;
+                    if (node.type === 'export') {
+                        radius = 9;
+                        color = '#ffb347';
+                        glowColor = 'rgba(255,179,71,0.7)';
+                        className = 'node-export';
+                    } else if (node.type === 'relay') {
+                        radius = 7;
+                        color = '#7ec8e3';
+                        glowColor = 'rgba(126,200,227,0.6)';
+                        className = 'node-relay';
+                    } else {
+                        radius = 5.5;
+                        color = '#b0b8c4';
+                        glowColor = 'rgba(176,184,196,0.5)';
+                        className = 'node-target';
+                    }
+                    const icon = L.divIcon({
+                        className: 'custom-node-icon ' + className,
+                        html: `
+                            <div style="
+                                width:${radius*2}px;height:${radius*2}px;
+                                border-radius:50%;
+                                background:${color};
+                                box-shadow: 0 0 ${radius*1.8}px ${glowColor}, 0 0 ${radius*3}px ${glowColor};
+                                border: 2px solid rgba(255,255,255,0.35);
+                                transition: all 0.3s ease;
+                            "></div>`,
+                        iconSize: [radius * 2, radius * 2],
+                        iconAnchor: [radius, radius],
+                    });
+                    const marker = L.marker([node.lat, node.lng], { icon, interactive: true, zIndexOffset: node.type ===
+                            'export' ? 200 : node.type === 'relay' ? 150 : 100
+                        })
+                        .bindTooltip(node.name, {
+                            direction: 'top',
+                            offset: [0, -radius - 4],
+                            className: 'node-tooltip',
+                            opacity: 0.85,
+                        });
+                    marker.addTo(markerGroup);
+                    nodeMarkers[key] = marker;
+                }
+            }
+            createNodeMarkers();
+
+            // ==================== 弧线绘制 ====================
+            function latLngToPixel(lat, lng) {
+                const point = map.latLngToContainerPoint([lat, lng]);
+                return { x: point.x, y: point.y };
+            }
+
+            // 计算贝塞尔曲线控制点（模拟大圆航线在墨卡托投影上的弯曲）
+            function computeControlPoint(p1, p2) {
+                const midX = (p1.x + p2.x) / 2;
+                const midY = (p1.y + p2.y) / 2;
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                // 偏移方向：在墨卡托投影中，大圆航线向极地方向弯曲
+                // 对于北半球的路径，控制点在中点上方（北方=屏幕上方=y减小）
+                const offsetMagnitude = dist * 0.22;
+                // 计算垂直方向
+                const perpX = -dy / (dist || 1);
+                const perpY = dx / (dist || 1);
+                // 确保弯曲方向一致（向极地方向）
+                let sign = 1;
+                const midLat = (p1._lat + p2._lat) / 2;
+                if (midLat > 0) sign = -1; // 北半球向上弯曲
+                else sign = 1;
+                // 但也要考虑实际：对于东西向路径在北半球，大圆向北弯曲
+                if (Math.abs(dx) > Math.abs(dy) && midLat > 0) sign = -1;
+                if (Math.abs(dx) > Math.abs(dy) && midLat < 0) sign = 1;
+
+                return {
+                    x: midX + perpX * offsetMagnitude * sign,
+                    y: midY + perpY * offsetMagnitude * sign,
+                };
+            }
+
+            // 采样贝塞尔曲线为点集
+            function sampleQuadraticBezier(p0, cp, p2, numSamples) {
+                const points = [];
+                for (let i = 0; i <= numSamples; i++) {
+                    const t = i / numSamples;
+                    const x = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * cp.x + t * t * p2.x;
+                    const y = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * cp.y + t * t * p2.y;
+                    points.push({ x, y });
+                }
+                return points;
+            }
+
+            function drawAllArcs() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                arcSegmentCache = [];
+
+                const config = operatorConfig[currentOperator];
+                const paths = config.paths;
+
+                for (const path of paths) {
+                    for (const seg of path.segments) {
+                        const fromNode = nodes[seg[0]];
+                        const toNode = nodes[seg[1]];
+                        if (!fromNode || !toNode) continue;
+
+                        const p1 = latLngToPixel(fromNode.lat, fromNode.lng);
+                        const p2 = latLngToPixel(toNode.lat, toNode.lng);
+                        // 存储原始经纬度用于后续
+                        p1._lat = fromNode.lat;
+                        p1._lng = fromNode.lng;
+                        p2._lat = toNode.lat;
+                        p2._lng = toNode.lng;
+                        const cp = computeControlPoint(p1, p2);
+                        const samples = sampleQuadraticBezier(p1, cp, p2, 80);
+
+                        // 存储用于hover检测
+                        arcSegmentCache.push({
+                            samples,
+                            pathId: path.id,
+                            dest: path.dest,
+                            rttNormal: path.rttNormal,
+                            rttPremium: path.rttPremium,
+                            desc: path.desc,
+                            color: config.color,
+                            glow: config.glow,
+                            fromKey: seg[0],
+                            toKey: seg[1],
+                        });
+
+                        // 绘制光晕
+                        ctx.beginPath();
+                        ctx.moveTo(samples[0].x, samples[0].y);
+                        for (let i = 1; i < samples.length; i++) {
+                            ctx.lineTo(samples[i].x, samples[i].y);
+                        }
+                        ctx.strokeStyle = config.glow;
+                        ctx.lineWidth = 5;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.globalAlpha = 0.35;
+                        ctx.stroke();
+
+                        // 绘制主线
+                        ctx.beginPath();
+                        ctx.moveTo(samples[0].x, samples[0].y);
+                        for (let i = 1; i < samples.length; i++) {
+                            ctx.lineTo(samples[i].x, samples[i].y);
+                        }
+                        ctx.strokeStyle = config.color;
+                        ctx.lineWidth = 2.2;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.globalAlpha = 0.75;
+                        ctx.stroke();
+
+                        // 绘制发光线（更细更亮）
+                        ctx.beginPath();
+                        ctx.moveTo(samples[0].x, samples[0].y);
+                        for (let i = 1; i < samples.length; i++) {
+                            ctx.lineTo(samples[i].x, samples[i].y);
+                        }
+                        ctx.strokeStyle = config.accent;
+                        ctx.lineWidth = 0.8;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.globalAlpha = 0.6;
+                        ctx.stroke();
+
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+
+            // ==================== Hover检测 ====================
+            let hoveredPathId = null;
+            let mouseX = -100;
+            let mouseY = -100;
+
+            function distToSegmentSq(px, py, x1, y1, x2, y2) {
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const lenSq = dx * dx + dy * dy;
+                if (lenSq === 0) return (px - x1) * (px - x1) + (py - y1) * (py - y1);
+                let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+                t = Math.max(0, Math.min(1, t));
+                const projX = x1 + t * dx;
+                const projY = y1 + t * dy;
+                return (px - projX) * (px - projX) + (py - projY) * (py - projY);
+            }
+
+            function findNearestArc(mx, my) {
+                let bestDist = Infinity;
+                let bestArc = null;
+                const threshold = 14; // 像素阈值
+                for (const arc of arcSegmentCache) {
+                    for (let i = 0; i < arc.samples.length - 1; i++) {
+                        const s0 = arc.samples[i];
+                        const s1 = arc.samples[i + 1];
+                        const dSq = distToSegmentSq(mx, my, s0.x, s0.y, s1.x, s1.y);
+                        if (dSq < bestDist) {
+                            bestDist = dSq;
+                            bestArc = arc;
+                        }
+                    }
+                }
+                if (bestDist < threshold * threshold) return bestArc;
+                return null;
+            }
+
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+                const nearest = findNearestArc(mouseX, mouseY);
+                if (nearest && nearest.pathId !== hoveredPathId) {
+                    hoveredPathId = nearest.pathId;
+                    // 重绘高亮
+                    drawAllArcsHighlighted(nearest.pathId);
+                    // 更新tooltip
+                    updateTooltip(nearest, e.clientX, e.clientY);
+                    canvas.style.cursor = 'pointer';
+                } else if (!nearest && hoveredPathId !== null) {
+                    hoveredPathId = null;
+                    drawAllArcs();
+                    hideTooltip();
+                    canvas.style.cursor = 'default';
+                }
+                if (nearest && hoveredPathId === nearest.pathId) {
+                    updateTooltipPosition(e.clientX, e.clientY);
+                }
+            });
+
+            canvas.addEventListener('mouseleave', function() {
+                hoveredPathId = null;
+                mouseX = -100;
+                mouseY = -100;
+                drawAllArcs();
+                hideTooltip();
+                canvas.style.cursor = 'default';
+            });
+
+            function drawAllArcsHighlighted(highlightPathId) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const config = operatorConfig[currentOperator];
+                for (const arc of arcSegmentCache) {
+                    const isHighlighted = arc.pathId === highlightPathId;
+                    const alpha = isHighlighted ? 1 : 0.25;
+                    const lineW = isHighlighted ? 3.5 : 1.4;
+                    const glowW = isHighlighted ? 9 : 2.5;
+                    const glowAlpha = isHighlighted ? 0.7 : 0.12;
+
+                    // 光晕
+                    ctx.beginPath();
+                    ctx.moveTo(arc.samples[0].x, arc.samples[0].y);
+                    for (let i = 1; i < arc.samples.length; i++) {
+                        ctx.lineTo(arc.samples[i].x, arc.samples[i].y);
+                    }
+                    ctx.strokeStyle = arc.glow;
+                    ctx.lineWidth = glowW;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.globalAlpha = glowAlpha;
+                    ctx.stroke();
+
+                    // 主线
+                    ctx.beginPath();
+                    ctx.moveTo(arc.samples[0].x, arc.samples[0].y);
+                    for (let i = 1; i < arc.samples.length; i++) {
+                        ctx.lineTo(arc.samples[i].x, arc.samples[i].y);
+                    }
+                    ctx.strokeStyle = arc.color;
+                    ctx.lineWidth = lineW;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.globalAlpha = alpha;
+                    ctx.stroke();
+
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            function updateTooltip(arc, clientX, clientY) {
+                const config = operatorConfig[currentOperator];
+                tooltip.querySelector('.tt-title').textContent = arc.dest;
+                tooltip.querySelector('.tt-title').style.color = config.color;
+                tooltip.querySelector('.tt-row').innerHTML = `
+                    普通宽带: <span>${arc.rttNormal}</span> &nbsp;|&nbsp; 优质线路: <span>${arc.rttPremium}</span>
+                `;
+                tooltip.querySelector('.tt-path').textContent = '路径: ' + arc.desc;
+                tooltip.classList.add('visible');
+                updateTooltipPosition(clientX, clientY);
+            }
+
+            function updateTooltipPosition(clientX, clientY) {
+                const mapWrapper = document.getElementById('map-wrapper');
+                const wrapperRect = mapWrapper.getBoundingClientRect();
+                const tx = clientX - wrapperRect.left;
+                const ty = clientY - wrapperRect.top - 40;
+                tooltip.style.left = tx + 'px';
+                tooltip.style.top = ty + 'px';
+            }
+
+            function hideTooltip() {
+                tooltip.classList.remove('visible');
+            }
+
+            // ==================== 表格渲染 ====================
+            function renderTable() {
+                const config = operatorConfig[currentOperator];
+                const tbody = document.getElementById('rtt-tbody');
+                tbody.innerHTML = '';
+                const badgeClass = config.badgeClass;
+
+                for (const path of config.paths) {
+                    const tr = document.createElement('tr');
+                    tr.setAttribute('data-path-id', path.id);
+                    tr.innerHTML = `
+                        <td><span class="${badgeClass}"></span><span class="dest-name">${path.dest}</span></td>
+                        <td class="rtt-val">${path.rttNormal}</td>
+                        <td class="rtt-val">${path.rttPremium}</td>
+                        <td class="path-desc">${path.desc}</td>
+                    `;
+                    tr.addEventListener('click', () => {
+                        // 点击表格行：飞向该路径的第一个目标节点
+                        const lastSeg = path.segments[path.segments.length - 1];
+                        const targetNode = nodes[lastSeg[1]];
+                        if (targetNode) {
+                            map.flyTo([targetNode.lat, targetNode.lng], 5, { duration: 1.2 });
+                            // 短暂高亮
+                            highlightPathBriefly(path.id);
+                        }
+                    });
+                    tr.addEventListener('mouseenter', () => {
+                        highlightPathBriefly(path.id);
+                        tr.classList.add('highlight-row');
+                    });
+                    tr.addEventListener('mouseleave', () => {
+                        if (hoveredPathId === path.id) {
+                            hoveredPathId = null;
+                            drawAllArcs();
+                            hideTooltip();
+                        }
+                        tr.classList.remove('highlight-row');
+                    });
+                    tbody.appendChild(tr);
+                }
+            }
+
+            function highlightPathBriefly(pathId) {
+                hoveredPathId = pathId;
+                drawAllArcsHighlighted(pathId);
+                // 找到对应arc更新tooltip
+                const arc = arcSegmentCache.find(a => a.pathId === pathId);
+                if (arc) {
+                    const mapWrapper = document.getElementById('map-wrapper');
+                    const wrapperRect = mapWrapper.getBoundingClientRect();
+                    const midSample = arc.samples[Math.floor(arc.samples.length / 2)];
+                    const clientX = wrapperRect.left + midSample.x;
+                    const clientY = wrapperRect.top + midSample.y;
+                    updateTooltip(arc, clientX, clientY);
+                }
+            }
+
+            // ==================== 运营商切换 ====================
+            function switchOperator(op) {
+                currentOperator = op;
+                const config = operatorConfig[op];
+                // 更新标签样式
+                document.querySelectorAll('.op-tab').forEach(tab => {
+                    tab.className = 'op-tab';
+                });
+                const activeTab = document.querySelector(`.op-tab[data-op="${op}"]`);
+                if (activeTab) activeTab.classList.add(config.cssClass);
+                // 重绘
+                hoveredPathId = null;
+                drawAllArcs();
+                hideTooltip();
+                renderTable();
+                // 重置canvas光标
+                canvas.style.cursor = 'default';
+            }
+
+            document.querySelectorAll('.op-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchOperator(this.getAttribute('data-op'));
+                });
+            });
+
+            // ==================== 地图事件 ====================
+            map.on('moveend', drawAllArcs);
+            map.on('zoomend', drawAllArcs);
+            map.on('resize', () => {
+                resizeCanvas();
+                drawAllArcs();
+            });
+
+            // 点击地图空白处取消高亮
+            map.on('click', function(e) {
+                if (hoveredPathId && !e.originalEvent.target.closest('#arc-canvas')) {
+                    hoveredPathId = null;
+                    drawAllArcs();
+                    hideTooltip();
+                    canvas.style.cursor = 'default';
+                }
+            });
+
+            // Canvas点击：飞向路径终点
+            canvas.addEventListener('click', function(e) {
+                if (hoveredPathId) {
+                    const arc = arcSegmentCache.find(a => a.pathId === hoveredPathId);
+                    if (arc) {
+                        const targetNode = nodes[arc.toKey];
+                        if (targetNode) {
+                            map.flyTo([targetNode.lat, targetNode.lng], 5, { duration: 1.2 });
+                        }
+                    }
+                }
+            });
+
+            // ==================== 初始渲染 ====================
+            switchOperator('telecom');
+            // 初始延迟一点确保地图加载完成
+            setTimeout(() => {
+                resizeCanvas();
+                drawAllArcs();
+            }, 400);
+
+            // ==================== 键盘快捷键 ====================
+            document.addEventListener('keydown', function(e) {
+                switch (e.key.toLowerCase()) {
+                    case '1':
+                        switchOperator('telecom');
+                        break;
+                    case '2':
+                        switchOperator('unicom');
+                        break;
+                    case '3':
+                        switchOperator('mobile');
+                        break;
+                    case 'r':
+                        map.setView([22, 50], 3, { animate: true });
+                        hoveredPathId = null;
+                        drawAllArcs();
+                        hideTooltip();
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            console.log('🌐 全球网络时延可视化已就绪');
+            console.log('   ⌨️ 快捷键: 1=电信 2=联通 3=移动 R=重置视图');
+            console.log('   🖱️ 悬停弧线查看详情 | 点击弧线或表格行定位');
+            console.log('   📡 当前运营商:', operatorConfig[currentOperator].name);
+        })();
+    </script>
+</body>
+</html>
