@@ -1,0 +1,10 @@
+{
+  "advisories": [
+    {"package": "cryptography", "range": "<41.0.2", "cve": "CVE-2023-49083", "severity": "high", "summary": "cryptography NULL pointer dereference in PKCS12 loading", "fixed_in": "41.0.2"},
+    {"package": "fastapi", "range": "<0.65.2", "cve": "CVE-2021-33621", "severity": "medium", "summary": "Open redirect / response splitting in certain redirects", "fixed_in": "0.65.2"},
+    {"package": "pydantic", "range": "<1.10.4", "cve": "CVE-2021-29510", "severity": "high", "summary": "CPU denial of service via crafted date/number parsing", "fixed_in": "1.10.4"},
+    {"package": "starlette", "range": "<0.35.13", "cve": "CVE-2023-29158", "severity": "medium", "summary": "Multipart form data denial of service", "fixed_in": "0.35.13"},
+    {"package": "aiohttp", "range": "<3.9.4", "cve": "CVE-2024-23334", "severity": "medium", "summary": "SSRF via request smuggling in some proxy setups", "fixed_in": "3.9.4"},
+    {"package": "requests", "range": "<2.32.0", "cve": "CVE-2024-35195", "severity": "medium", "summary": "Proxy-Authorization header leak on cross-origin redirect", "fixed_in": "2.32.0"}
+  ]
+}
