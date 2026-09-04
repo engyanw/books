@@ -1,0 +1,3088 @@
+#如何用代码智能体来开发一个大型的软件项目
+
+# 《Agent-Native Software Engineering（ANSE）技术白皮书》
+
+## V2.1 —— Trustworthy Autonomous Software Engineering
+
+**版本：V2.1**
+
+**英文全称：Agent-Native Software Engineering**
+
+**核心定位：Trustworthy Autonomous Software Factory**
+
+**核心范式：Intent → Spec → Plan → Capability → Agent → Harness → Execute → Verify → Evidence → Meta-Assure → Govern → Evolve**
+
+---
+
+# 1. 摘要
+
+大语言模型和代码智能体正在推动软件工程发生结构性变化。
+
+过去的软件生产模式主要是：
+
+```text
+需求
+ ↓
+架构师
+ ↓
+程序员
+ ↓
+测试
+ ↓
+运维
+```
+
+AI 辅助开发将其演进为：
+
+```text
+需求
+ ↓
+人
+ ↓
+LLM
+ ↓
+代码
+```
+
+但当项目进入大型单体、微服务集群、复杂分布式系统以及百万行级代码规模之后，仅仅增加模型能力、扩大上下文窗口，并不能解决软件工程的核心问题。
+
+大型软件开发真正困难的不是：
+
+> “能否生成代码。”
+
+而是：
+
+> “能否持续保持意图、规范、架构、代码、验证、运行事实之间的一致性，并在 Agent 自主运行时控制其权限、上下文、资源和风险。”
+
+因此，ANSE 不把 Coding Agent 定义为简单的“AI 程序员”，而定义为：
+
+> **A governed autonomous engineering worker——受工程治理约束的自主软件工程执行单元。**
+
+围绕这一执行单元，ANSE 建立：
+
+* Intent Governance；
+* Spec Assurance；
+* Engineering Knowledge；
+* Impact Analysis；
+* Agent Identity；
+* Capability Lease；
+* Runtime Isolation；
+* Verification Integrity；
+* Evidence Fabric；
+* Meta-Verification；
+* Risk-Adaptive Autonomy；
+* Decision Provenance；
+* Supply Chain Security；
+* Legacy DevOps Integration。
+
+最终将软件研发从：
+
+> **AI-assisted Coding**
+
+演进到：
+
+> **Agentic Software Engineering**
+
+再演进到：
+
+> **Trustworthy Autonomous Software Factory**
+
+---
+
+# 2. ANSE 的核心定义
+
+ANSE 是一种面向代码智能体时代的大型软件工程范式。
+
+其基本生产单元不是：
+
+```text
+Human + IDE + Code
+```
+
+而是：
+
+```text
+Intent
++
+Specification
++
+Task
++
+Capability
++
+Agent
++
+Harness
++
+Verification
++
+Evidence
+```
+
+其基本闭环是：
+
+```text
+Intent
+ ↓
+Requirement
+ ↓
+Spec
+ ↓
+Architecture
+ ↓
+Task
+ ↓
+Agent
+ ↓
+Execution
+ ↓
+Verification
+ ↓
+Evidence
+ ↓
+Meta-Assurance
+ ↓
+Risk Decision
+ ↓
+Release
+ ↓
+Runtime Feedback
+```
+
+ANSE 的目标不是：
+
+> 让 Agent 写更多代码。
+
+而是：
+
+> **让 Agent 能够在受控、可验证、可追溯、可降级的工程环境中持续完成大型软件系统的设计、实现、验证与演进。**
+
+---
+
+# 3. 为什么传统 Prompt/Chat 模式无法支撑大型项目
+
+传统 AI Coding 模式可以抽象为：
+
+```text
+Prompt
+ ↓
+LLM
+ ↓
+Code
+```
+
+它依赖四个隐含假设：
+
+1. Agent 能理解足够多的项目上下文；
+2. Agent 能正确理解需求；
+3. Agent 会自主遵守工程约束；
+4. Agent 能正确判断自己的工作是否完成。
+
+在大型项目中，这四个假设都不可靠。
+
+于是会出现：
+
+```text
+Context Explosion
+Architecture Drift
+Spec Drift
+Hidden Coupling
+Permission Escape
+Repair Loop
+Test Hacking
+Knowledge Staleness
+Agent Concurrency Conflict
+False Verification
+```
+
+这些问题意味着：
+
+> **大型软件工程不是一个代码生成问题，而是一个受约束的复杂决策与执行系统问题。**
+
+因此需要从：
+
+```text
+Prompt Engineering
+```
+
+转向：
+
+```text
+Engineering System Design
+```
+
+---
+
+# 4. ANSE 的第一性原理
+
+ANSE 建立以下第一性原理。
+
+## 4.1 Intent First
+
+系统必须首先知道：
+
+> 为什么做。
+
+但 Intent 不仅是业务需求。
+
+ANSE 将 Intent 分成：
+
+```text
+Business Intent
+Technical Intent
+Operational Intent
+Security Intent
+Compliance Intent
+```
+
+例如：
+
+```text
+Business:
+支持海外支付
+
+Technical:
+数据库迁移到 PostgreSQL
+
+Operational:
+降低 P99 延迟
+
+Security:
+修复高危漏洞
+
+Compliance:
+满足数据驻留要求
+```
+
+所有工程任务都必须绑定至少一种合法 Intent。
+
+---
+
+## 4.2 Spec Before Execution
+
+Agent 不应直接从自然语言需求跳到代码。
+
+标准路径：
+
+```text
+Intent
+ ↓
+Requirement
+ ↓
+Spec
+ ↓
+Architecture
+ ↓
+Task
+ ↓
+Execution
+```
+
+---
+
+## 4.3 Capability Before Action
+
+Agent 不应先执行、后判断是否允许。
+
+正确路径：
+
+```text
+Task
+ ↓
+Risk
+ ↓
+Capability Request
+ ↓
+Policy Evaluation
+ ↓
+Capability Lease
+ ↓
+Execution
+```
+
+---
+
+## 4.4 Evidence Before Trust
+
+Agent 说：
+
+> “完成。”
+
+不构成完成。
+
+完成必须基于：
+
+```text
+Build Evidence
+Test Evidence
+Security Evidence
+Performance Evidence
+Runtime Evidence
+```
+
+---
+
+## 4.5 Verification Must Be Independent
+
+被测 Agent 不应该拥有：
+
+```text
+Code
++
+Verification
++
+Environment
++
+Evidence
+```
+
+的完全控制权。
+
+否则无法建立可信验证闭环。
+
+---
+
+## 4.6 Runtime Is Observed Truth, Not Automatically Normative Truth
+
+系统需要区分：
+
+```text
+Normative Truth
+```
+
+与：
+
+```text
+Observed Truth
+```
+
+前者来自：
+
+```text
+Intent
+Spec
+Architecture
+Contract
+Policy
+```
+
+后者来自：
+
+```text
+Runtime
+Trace
+Metric
+Log
+Event
+```
+
+两者发生冲突时，不允许简单覆盖，而应该：
+
+```text
+Conflict
+ ↓
+Drift Detection
+ ↓
+Investigation
+ ↓
+Correction
+```
+
+---
+
+# 5. ANSE 2.1 总体架构
+
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                 L6  Intent & Governance Plane                    │
+│ Business / Technical / Operational / Security / Compliance       │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+┌──────────────────────────────────────────────────────────────────┐
+│                 L5  Specification Assurance Plane                │
+│ Requirement / Contract / Architecture / Rule / Invariant        │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+┌──────────────────────────────────────────────────────────────────┐
+│               L4  Engineering Intelligence Plane                 │
+│ Knowledge Graph / Impact / Dependency / Planning / Risk         │
+│ Confidence / Uncertainty / Drift                                 │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+┌──────────────────────────────────────────────────────────────────┐
+│                    L3  Agent Control Plane                        │
+│ Identity / Orchestrator / Scheduler / Capability / Lease        │
+│ Budget / Policy / Autonomy Control                                │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+┌──────────────────────────────────────────────────────────────────┐
+│                     L2  Agent Execution Plane                     │
+│ Coding / Testing / Debugging / Refactoring / Tools              │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+┌──────────────────────────────────────────────────────────────────┐
+│                    L1  Runtime & Harness Plane                    │
+│ Sandbox / Filesystem / Network / Process / Resource Isolation   │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+┌──────────────────────────────────────────────────────────────────┐
+│                Verification & Evidence Plane                      │
+│ Unit / Integration / Contract / Property / Mutation / Hidden    │
+│ Security / Performance / Runtime / Trace / Provenance            │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+┌──────────────────────────────────────────────────────────────────┐
+│                  L0  Meta-Assurance Plane                         │
+│ Verify Harness / Rules / Tests / Graph / Policies / Reducer     │
+└──────────────────────────────┬───────────────────────────────────┘
+                               ↓
+                  Risk-Adaptive Autonomy Controller
+                               ↓
+                    Autonomous / Human Decision
+```
+
+---
+
+# 6. 五大 Integrity 升级为 Assurance Model
+
+V2.0 使用：
+
+```text
+Intent Integrity
+Spec Integrity
+Execution Integrity
+Verification Integrity
+Evidence Integrity
+```
+
+V2.1 将其升级为：
+
+> **Five Assurance Dimensions**
+
+即：
+
+```text
+Intent Assurance
+Spec Assurance
+Execution Assurance
+Verification Assurance
+Evidence Assurance
+```
+
+它们不是相互独立的，因此不再使用简单乘积模型。
+
+---
+
+# 7. Trustworthiness Model
+
+ANSE 2.1 定义系统可信度：
+
+```text
+Trustworthiness
+=
+Weighted Assurance
+×
+Dependency Adjustment
+×
+Evidence Confidence
+×
+Uncertainty Adjustment
+```
+
+并附加：
+
+```text
+Hard Safety Constraints
+```
+
+即：
+
+> 某些维度不能被其他维度抵消。
+
+例如：
+
+```text
+Verification Assurance < threshold
+→ 禁止高自主级别
+
+Security Assurance < threshold
+→ 禁止生产发布
+
+Evidence Assurance < threshold
+→ 禁止自动 Merge
+```
+
+---
+
+# 8. Weighted Assurance
+
+不同任务使用不同权重：
+
+```text
+A =
+Σ wi × Ai
+```
+
+其中：
+
+```text
+Ai = Assurance Dimension
+wi = Task-specific Weight
+```
+
+例如：
+
+核心交易系统：
+
+```text
+Verification > Security > Evidence > Execution
+```
+
+内部工具：
+
+```text
+Execution > Productivity > Verification
+```
+
+安全修复：
+
+```text
+Security > Verification > Execution
+```
+
+从而避免所有任务采用固定评价标准。
+
+---
+
+# 9. Dependency Adjustment
+
+完整性之间存在耦合。
+
+例如：
+
+```text
+Spec Assurance
+      ↓
+Verification Assurance
+```
+
+因此增加：
+
+```text
+Dependency Adjustment
+```
+
+避免简单线性求和造成：
+
+> 某些关键短板被其他高分抵消。
+
+---
+
+# 10. Uncertainty Is First-Class
+
+ANSE 不仅保存：
+
+```text
+Confidence
+```
+
+还保存：
+
+```text
+Uncertainty
+```
+
+因为复杂软件系统不可能得到 100% 完整知识。
+
+例如：
+
+```yaml
+context:
+  confidence: 0.84
+  uncertainty: 0.16
+
+unknown:
+  - third-party-payment
+  - async-event-chain
+```
+
+系统不能假装未知部分不存在。
+
+---
+
+# 11. Intent Assurance
+
+Intent Assurance 的目标：
+
+> 确保系统做的是正确的问题。
+
+检查链：
+
+```text
+Intent
+ ↓
+Requirement
+ ↓
+Acceptance Criteria
+ ↓
+Task
+```
+
+验证：
+
+* 是否偏离原始目标；
+* 是否存在未授权目标；
+* 是否存在不合理技术动作；
+* 是否遗漏重要约束。
+
+---
+
+# 12. Spec Assurance
+
+Spec Assurance 关注：
+
+> 系统应该是什么样。
+
+采用分层规范：
+
+```text
+L1 Contract Spec
+    OpenAPI / Protobuf / JSON Schema
+
+L2 Behavioral Spec
+    BDD / Property / Invariant
+
+L3 Business Rule
+    Rule Engine + Structured Text
+
+L4 Intent Narrative
+    Natural Language
+```
+
+不是追求：
+
+> 所有需求都形式化。
+
+而是追求：
+
+> **越关键的行为，越接近可执行规范。**
+
+---
+
+# 13. Spec-Code Consistency
+
+不采用简单规则：
+
+```text
+Code Change
+→ Spec 必须修改
+```
+
+而采用：
+
+```text
+Code Change
+ ↓
+Semantic Impact Analysis
+ ↓
+是否影响：
+Contract
+Behavior
+Architecture
+Security
+Data
+SLA
+ ↓
+YES / NO
+```
+
+如果 YES：
+
+```text
+Spec Update Required
+```
+
+如果 NO：
+
+```text
+Evidence:
+Spec remains valid
+```
+
+因此形成：
+
+> **Semantic Spec Assurance**
+
+---
+
+# 14. Spec Validation
+
+错误 Spec 同样会造成严重问题。
+
+因此 Spec 在进入工程执行前，需要：
+
+```text
+Consistency Check
++
+Scenario Analysis
++
+Counterexample
++
+Property Validation
++
+Human Review
+```
+
+例如：
+
+```text
+Spec:
+Retry <= 3
+
+Scenario:
+Timeout + failover + idempotency
+
+Simulation:
+Actual retry = 5
+
+→ Spec Contradiction
+```
+
+---
+
+# 15. Engineering Knowledge Plane
+
+ANSE 的知识系统不是简单 RAG。
+
+而是：
+
+```text
+Software Knowledge Fabric
+```
+
+数据来自：
+
+```text
+Source Code
+API
+Schema
+Architecture
+ADR
+Config
+CI
+Runtime Trace
+Deployment
+Logs
+Metrics
+Events
+```
+
+形成统一工程知识。
+
+---
+
+# 16. Dual-Truth Knowledge Graph
+
+知识图谱分为：
+
+```text
+Normative Graph
+Observed Graph
+```
+
+### Normative Graph
+
+描述：
+
+> 系统应该怎样工作。
+
+来源：
+
+```text
+Spec
+Architecture
+Contract
+Policy
+ADR
+```
+
+### Observed Graph
+
+描述：
+
+> 系统实际上怎样工作。
+
+来源：
+
+```text
+Runtime
+Trace
+Logs
+Events
+Metrics
+```
+
+二者冲突：
+
+```text
+Drift
+```
+
+而不是直接覆盖。
+
+---
+
+# 17. Evidence-Driven Knowledge Graph
+
+Agent 可以提出：
+
+```text
+Inferred Relationship
+```
+
+但不能直接将其作为事实。
+
+关系状态：
+
+```text
+Observed
+Inferred
+Confirmed
+Deprecated
+Unknown
+```
+
+每个关系带：
+
+```text
+Confidence
+Provenance
+Freshness
+Source
+```
+
+---
+
+# 18. Knowledge Graph 冲突处理
+
+例如：
+
+```text
+Spec:
+A → B
+
+Runtime:
+A → C
+```
+
+系统生成：
+
+```text
+Conflict Record
+
+type:
+Architecture-Runtime Drift
+
+severity:
+High
+
+action:
+Investigation Required
+```
+
+而不是：
+
+```text
+Runtime > Spec
+```
+
+---
+
+# 19. Impact Engine
+
+传统 Context：
+
+```text
+Global Context
++
+Local Context
+```
+
+升级为：
+
+```text
+Global Context
++
+Task Context
++
+Impact Context
++
+Runtime Context
+```
+
+Impact Engine 综合：
+
+```text
+AST
+Static Dependency
+Semantic Dependency
+API Dependency
+Event Dependency
+Data Dependency
+Config Dependency
+Runtime Trace
+Deployment Topology
+```
+
+---
+
+# 20. Impact Is Probabilistic
+
+ANSE 不追求：
+
+> 100% 准确的 Impact Graph。
+
+而追求：
+
+> **Bounded-Uncertainty Impact Analysis**
+
+定义：
+
+```text
+Impact
+=
+Known
++
+Potential
++
+Unknown
+```
+
+例如：
+
+```text
+Known Components:
+17
+
+Potential Components:
+8
+
+Unknown Components:
+3
+```
+
+---
+
+# 21. Context Assessment
+
+Context 不再是文件列表，而是：
+
+```yaml
+context_assessment:
+  coverage: 0.91
+  confidence: 0.84
+  freshness: 0.96
+  completeness: 0.79
+  uncertainty: 0.21
+
+  blind_spots:
+    - async-event-chain
+    - external-provider
+```
+
+Agent 必须知道：
+
+> 哪些知识可靠，哪些知识存在盲区。
+
+---
+
+# 22. Agent Identity Plane
+
+每个 Agent 都必须具备独立身份。
+
+完整身份：
+
+```text
+Agent ID
++
+Model ID
++
+Model Version
++
+Skill Version
++
+Toolset
++
+Task ID
++
+Lease ID
++
+Runtime ID
++
+Human Sponsor
+```
+
+能够回答：
+
+```text
+Who?
+What?
+Why?
+When?
+Where?
+Under Which Lease?
+Using Which Model?
+```
+
+---
+
+# 23. Capability Model
+
+Agent 能做什么由：
+
+```text
+Capability
+=
+Permission
++
+Scope
++
+Time
++
+Budget
++
+Resource
++
+Risk
+```
+
+决定。
+
+---
+
+# 24. Capability Lease
+
+Agent 启动时：
+
+```text
+Task
+ ↓
+Capability Request
+ ↓
+Policy Engine
+ ↓
+Risk Engine
+ ↓
+Capability Lease
+ ↓
+Execution
+```
+
+Lease 结束：
+
+```text
+Expire
+/
+Revoke
+```
+
+---
+
+# 25. Behavioral Capability Control
+
+能力控制不再只是：
+
+```text
+Path ACL
+Command Allowlist
+```
+
+而是：
+
+```text
+Command
++
+Arguments
++
+Environment
++
+Working Directory
++
+Filesystem
++
+Network
++
+Process
++
+Resource
+```
+
+即：
+
+> **Behavior-level Authorization**
+
+---
+
+# 26. Capability Escape 防护
+
+必须防止：
+
+```text
+Symlink
+Hardlink
+Path Traversal
+Mount Escape
+Namespace Escape
+Process Injection
+Environment Manipulation
+Network Pivot
+```
+
+因此 Agent 必须运行在受控 Runtime 中。
+
+---
+
+# 27. Resource Budget
+
+Agent 预算不仅是：
+
+```text
+Token
+Time
+```
+
+还包括：
+
+```text
+CPU
+Memory
+Disk
+Network
+QPS
+Concurrency
+Tool Calls
+Files Changed
+Repair Attempts
+```
+
+例如：
+
+```yaml
+budget:
+  tokens: 200000
+  duration: 30m
+  cpu: 4
+  memory_mb: 8192
+  network_qps: 50
+  concurrency: 5
+  tool_calls: 500
+  repair_attempts: 4
+```
+
+---
+
+# 28. Capability Revocation
+
+不同资源采用不同撤销机制：
+
+```text
+Immediate Kill
+Graceful Drain
+Transaction Rollback
+Compensation
+Non-reversible Escalation
+```
+
+例如：
+
+```text
+文件：
+→ Graceful / Atomic
+
+数据库：
+→ Transaction Rollback
+
+外部 RPC：
+→ Compensation
+
+生产系统：
+→ Immediate Restriction
+```
+
+---
+
+# 29. Runtime Isolation
+
+Agent Runtime 必须与宿主环境隔离。
+
+支持：
+
+```text
+Container
+gVisor
+Firecracker
+VM
+Cloud Sandbox
+```
+
+由风险级别决定。
+
+```text
+Low Risk
+→ Container
+
+Medium Risk
+→ Strong Sandbox
+
+High Risk
+→ VM
+
+Production
+→ No Direct Agent Access
+```
+
+---
+
+# 30. Multi-Agent Orchestrator
+
+Orchestrator 负责：
+
+```text
+Task Decomposition
+Agent Selection
+Context Allocation
+Capability Allocation
+Scheduling
+Dependency Management
+Risk Control
+Verification Scheduling
+Escalation
+```
+
+而不是把所有工作交给一个“超级 Agent”。
+
+---
+
+# 31. Multi-Agent Collaboration
+
+采用：
+
+> **Artifact-driven Collaboration**
+
+而不是自由聊天。
+
+Agent 通过：
+
+```text
+Requirement
+Architecture
+Decision
+Plan
+Change Proposal
+Test Plan
+Evidence
+Review
+```
+
+进行结构化协作。
+
+---
+
+# 32. Immutable Decision Log
+
+重要决策不能被直接覆盖。
+
+采用：
+
+```text
+Append-only Log
++
+Hash Chain
++
+Digital Signature
++
+Trusted Timestamp
++
+Snapshot
++
+Replay Verification
+```
+
+每个 Decision 包含：
+
+```text
+Decision ID
+Parent
+Author
+Intent
+Reason
+Change
+Impact
+Evidence
+Signature
+```
+
+---
+
+# 33. State Projection
+
+Decision Log 通过 Reducer 投影出当前状态：
+
+```text
+Decision Log
+ ↓
+Reducer
+ ↓
+Current Architecture
+```
+
+Reducer 必须支持：
+
+```text
+Replay
+Invariant Check
+Cross Validation
+Snapshot Compare
+```
+
+防止长期累积错误。
+
+---
+
+# 34. Agent Scheduler
+
+大规模 Multi-Agent 系统需要真正的 Scheduler。
+
+必须具备：
+
+```text
+Dependency Graph
+Cycle Detection
+Priority
+Fairness
+Quota
+Preemption
+Checkpoint
+Recovery
+Retry
+```
+
+---
+
+# 35. 死锁检测
+
+任务：
+
+```text
+A → B
+B → C
+C → A
+```
+
+调度器必须自动检测：
+
+```text
+Cycle
+```
+
+并停止相关任务。
+
+---
+
+# 36. 公平调度
+
+防止：
+
+```text
+High Priority
+→ Continuous Resource Occupation
+→ Low Priority Starvation
+```
+
+采用：
+
+```text
+Priority
++
+Fairness
++
+Quota
++
+Aging
+```
+
+确保长期公平。
+
+---
+
+# 37. Verification Plane
+
+Verification 不再只是：
+
+```text
+Build
++
+Unit Test
+```
+
+而是：
+
+```text
+Static Analysis
+Unit
+Integration
+Contract
+Property
+Mutation
+Fuzz
+Hidden Test
+Security
+Performance
+Runtime Canary
+Invariant
+```
+
+并根据风险动态选择。
+
+---
+
+# 38. Verification Integrity
+
+Verification 环境必须独立于 Execution Agent。
+
+```text
+Execution Plane
+       ║
+       ║ HARD ISOLATION
+       ║
+Verification Plane
+```
+
+Agent 不应该读取：
+
+```text
+Hidden Tests
+Golden Dataset
+Verification Rules
+Expected Outputs
+```
+
+---
+
+# 39. Verification Semantics Protection
+
+保护对象不仅是：
+
+```text
+/tests/**
+```
+
+而是：
+
+> **Verification Semantics**
+
+禁止 Agent 通过：
+
+```text
+修改测试
+修改断言
+弱化 Mock
+修改测试配置
+污染缓存
+改变环境变量
+关闭检查
+修改 Golden Data
+```
+
+获得虚假 PASS。
+
+---
+
+# 40. Risk-based Verification
+
+不同 Task 使用不同验证强度。
+
+```text
+Low Risk
+→ Unit + Lint
+
+Medium Risk
+→ Unit + Integration + Contract
+
+High Risk
+→ + Mutation + Property
+
+Critical
+→ + Hidden Test + Formal + Canary + Human
+```
+
+---
+
+# 41. Mutation Testing
+
+Mutation Testing 用于判断：
+
+> 测试是否真的能够发现错误。
+
+但它不是：
+
+> 正确性的完整证明。
+
+因此只作为 Verification Stack 的一个组成部分。
+
+---
+
+# 42. Repair Engine
+
+标准循环：
+
+```text
+Plan
+ ↓
+Act
+ ↓
+Observe
+ ↓
+Verify
+ ↓
+Repair
+ ↓
+Verify
+```
+
+但必须具备：
+
+```text
+Repair Budget
+Failure Signature
+Root Cause Analysis
+Progress Measurement
+Regression Detection
+Circuit Breaker
+```
+
+---
+
+# 43. Root-Cause Convergence
+
+Agent 修复成功不能只看：
+
+```text
+Test Pass
+```
+
+还需要判断：
+
+```text
+Root Cause Resolved
++
+Behavior Preserved
++
+Regression Risk Stable
++
+Complexity Reasonable
+```
+
+---
+
+# 44. Pseudo-Convergence
+
+以下行为可能造成：
+
+```text
+False PASS
+```
+
+例如：
+
+```text
+吞异常
+硬编码
+特殊分支
+放宽断言
+修改 Mock
+禁用检查
+```
+
+因此引入：
+
+> **Behavioral Convergence**
+
+---
+
+# 45. Repair Circuit Breaker
+
+当系统检测：
+
+```text
+No Improvement
+Repeated Same Failure
+Regression
+Increasing Complexity
+Risk Escalation
+```
+
+立即：
+
+```text
+STOP
+ ↓
+ESCALATE
+```
+
+重试次数不是固定值，而由：
+
+```text
+Task Complexity
+Risk
+Convergence Rate
+Historical Failure
+```
+
+动态决定。
+
+---
+
+# 46. Evidence Fabric
+
+每次 Agent 执行产生：
+
+```text
+Agent Trace
+Capability Lease
+Tool Calls
+Git Diff
+Commit
+Build
+Tests
+Security
+Performance
+Runtime
+Decision
+```
+
+形成：
+
+> **Engineering Evidence Fabric**
+
+---
+
+# 47. Provenance Chain
+
+一个代码变化应能够追溯：
+
+```text
+Intent
+ ↓
+Requirement
+ ↓
+Spec
+ ↓
+ADR
+ ↓
+Task
+ ↓
+Agent
+ ↓
+Lease
+ ↓
+Commit
+ ↓
+Verification
+ ↓
+Release
+ ↓
+Runtime
+```
+
+这使系统能够回答：
+
+> 为什么修改？
+
+> 谁修改？
+
+> 依据什么修改？
+
+> 谁授权？
+
+> 如何验证？
+
+> 对什么产生了影响？
+
+---
+
+# 48. Meta-Verification
+
+ANSE 2.1 新增：
+
+# Meta-Assurance Plane
+
+因为：
+
+> 验证器本身也可能出错。
+
+因此：
+
+```text
+Code Verification
+ ↓
+Meta Verification
+ ↓
+Independent Assurance
+```
+
+---
+
+# 49. 验证 Harness
+
+Meta-Verification 检查：
+
+```text
+Verification Rules
+Test Infrastructure
+Harness
+Policy
+Knowledge Graph
+Reducer
+Drift Detection
+```
+
+---
+
+# 50. 验证验证系统的方法
+
+包括：
+
+```text
+Known Defect Injection
+Mutation of Verification Rules
+Harness Escape Testing
+Policy Regression
+Failure Injection
+Independent Test Baseline
+Cross Validator
+```
+
+例如：
+
+```text
+已知缺陷注入
+ ↓
+Verification
+ ↓
+是否检测到？
+```
+
+如果检出率下降：
+
+```text
+Verification Health ↓
+```
+
+---
+
+# 51. Independent Assurance
+
+ANSE 不追求无限递归验证。
+
+而采用：
+
+```text
+System Verification
++
+Independent Baseline
++
+Periodic Audit
++
+Production Canary
+```
+
+形成：
+
+> **有限递归、外部校准的可信验证体系。**
+
+---
+
+# 52. Autonomy Control
+
+Agent 的自主等级不应是静态标签。
+
+自主能力：
+
+```text
+Autonomy
+=
+f(
+Trustworthiness,
+Risk,
+Uncertainty,
+Blast Radius,
+Verification Strength
+)
+```
+
+---
+
+# 53. 五级自主模型
+
+```text
+L0 Manual
+Human executes
+
+L1 Assisted
+Agent suggests
+
+L2 Copilot
+Agent executes, Human supervises
+
+L3 Controlled Autonomous
+Agent executes within Harness
+
+L4 Adaptive Autonomous
+Agent dynamically plans and repairs
+
+L5 Systemic Autonomous
+Software Factory continuously manages engineering lifecycle
+```
+
+---
+
+# 54. Autonomy Admission
+
+进入更高自主等级必须满足：
+
+```text
+Trustworthiness Threshold
++
+Context Confidence
++
+Verification Strength
++
+Historical Success
++
+Risk Limit
+```
+
+例如：
+
+```text
+L3:
+Trust > 0.80
+
+L4:
+Trust > 0.90
+Risk < High
+Context > 0.90
+
+L5:
+Trust > 0.95
++
+Independent Assurance
++
+Human Governance
+```
+
+具体阈值由项目和领域策略配置。
+
+---
+
+# 55. Autonomy Degradation
+
+自主等级必须支持动态下降。
+
+例如：
+
+```text
+L4
+ ↓
+Security Alert
+ ↓
+Context Confidence ↓
+ ↓
+Risk ↑
+ ↓
+L3
+ ↓
+Capability Restricted
+```
+
+必要时：
+
+```text
+L3
+ ↓
+L2
+ ↓
+Human Takeover
+```
+
+---
+
+# 56. Risk-Adaptive HITL
+
+HITL 不再是：
+
+```text
+所有事情都需要人审批
+```
+
+而是：
+
+```text
+Risk
++
+Confidence
++
+Blast Radius
++
+Evidence
+```
+
+决定人工参与级别。
+
+例如：
+
+```text
+Low Risk
+→ Autonomous
+
+Medium Risk
+→ Automated Review
+
+High Risk
+→ AI Review + Human Approval
+
+Critical
+→ Mandatory Human Decision
+```
+
+---
+
+# 57. Human 的角色变化
+
+传统：
+
+> 人是代码审核员。
+
+ANSE：
+
+> 人是意图、风险、例外和不可逆决策的治理者。
+
+人主要负责：
+
+```text
+Intent
+Risk Acceptance
+Architecture
+Exception
+Irreversible Decision
+Break-Glass
+```
+
+---
+
+# 58. Agent Data Security Plane
+
+Capability 解决：
+
+> 能不能访问。
+
+Data Security 进一步解决：
+
+> 能看到什么、能传什么。
+
+包括：
+
+```text
+Data Classification
+Secret Detection
+Redaction
+DLP
+Egress Control
+Credential Isolation
+Network Policy
+Content Inspection
+```
+
+---
+
+# 59. Agent Supply Chain Security
+
+安全边界扩展为三条供应链：
+
+```text
+Software Supply Chain
+Agent Supply Chain
+Model Supply Chain
+```
+
+包括：
+
+```text
+Dependency
+Container
+Plugin
+Tool
+MCP Server
+Agent Skill
+Model
+Prompt Package
+```
+
+必须进行：
+
+```text
+Integrity Verification
+Version Pinning
+Provenance
+Vulnerability Scanning
+License Compliance
+Runtime Isolation
+```
+
+---
+
+# 60. DoD 2.1
+
+Definition of Done 必须 Policy-as-Code。
+
+例如：
+
+```yaml
+dod:
+  type: high-risk-service
+
+  quality:
+    unit_coverage_min: 85
+
+  performance:
+    p95_ms_max: 100
+    p99_ms_max: 200
+
+  security:
+    critical_max: 0
+    high_max: 0
+
+  contract:
+    breaking_change: false
+
+  reliability:
+    error_rate_max: 0.1%
+
+  verification:
+    hidden_test_required: true
+```
+
+形成：
+
+```text
+Global Policy
+ ↓
+Domain Policy
+ ↓
+Module Policy
+ ↓
+Task Policy
+```
+
+---
+
+# 61. DevOps Integration
+
+ANSE 不要求企业抛弃现有工具链。
+
+它应该运行在现有研发体系之上：
+
+```text
+Jira
+GitLab
+GitHub
+Jenkins
+K8s
+SonarQube
+Prometheus
+Grafana
+Service Mesh
+        ↓
+ANSE Adapter
+        ↓
+ANSE Control Plane
+```
+
+ANSE 的定位是：
+
+> **Agent Engineering Control Plane**
+
+而不是：
+
+> DevOps 替代品。
+
+---
+
+# 62. Legacy System Migration
+
+遗留系统不可能一次性变成 Spec-driven。
+
+因此提供：
+
+> **Reverse Engineering Path**
+
+从：
+
+```text
+Code
+API
+Schema
+Runtime
+Docs
+Logs
+```
+
+反向生成：
+
+```text
+Initial Spec
+Initial Architecture
+Dependency Graph
+Runtime Graph
+Candidate ADR
+```
+
+然后：
+
+```text
+Human Review
+ ↓
+Baseline
+ ↓
+ANSE Governance
+```
+
+---
+
+# 63. 渐进式迁移
+
+企业采用：
+
+```text
+Phase 1
+ANSE Observe
+
+Phase 2
+ANSE Assist
+
+Phase 3
+ANSE Control
+
+Phase 4
+ANSE Autonomous
+```
+
+而不是：
+
+```text
+Big Bang Migration
+```
+
+---
+
+# 64. P0 Break-Glass
+
+紧急问题允许建立：
+
+> **Emergency Autonomous Path**
+
+流程：
+
+```text
+P0 Incident
+ ↓
+Break-Glass
+ ↓
+Restricted Capability
+ ↓
+Minimal Change
+ ↓
+Immediate Verification
+ ↓
+Canary
+ ↓
+Release
+ ↓
+Mandatory Postmortem
+```
+
+原则：
+
+> **减少审批，不减少审计。**
+
+---
+
+# 65. ANSE Safe Bootstrapping
+
+ANSE 本身不应该一开始就完全由 Agent 构建。
+
+建议：
+
+```text
+Phase 0
+Human-built Core
+
+Phase 1
+AI-assisted
+
+Phase 2
+L2 Autonomous
+
+Phase 3
+L3 Controlled Autonomous
+
+Phase 4
+ANSE develops ANSE modules
+
+Phase 5
+Self-improving Software Factory
+```
+
+每次自举：
+
+```text
+Snapshot
+ ↓
+Verification
+ ↓
+Comparison
+ ↓
+Canary
+ ↓
+Approval
+```
+
+---
+
+# 66. 软件生命周期中的 ANSE
+
+完整生命周期：
+
+```text
+Intent
+ ↓
+Requirement
+ ↓
+Architecture
+ ↓
+Planning
+ ↓
+Implementation
+ ↓
+Verification
+ ↓
+Release
+ ↓
+Runtime
+ ↓
+Observation
+ ↓
+Drift Detection
+ ↓
+Optimization
+ ↓
+New Intent
+```
+
+形成持续工程闭环。
+
+---
+
+# 67. ANSE 六大工程闭环
+
+## Loop 1：Intent Loop
+
+```text
+Intent
+→ Requirement
+→ Acceptance
+```
+
+保证：
+
+> 做正确的事情。
+
+## Loop 2：Spec Loop
+
+```text
+Requirement
+→ Spec
+→ Architecture
+→ Contract
+```
+
+保证：
+
+> 设计正确。
+
+## Loop 3：Execution Loop
+
+```text
+Task
+→ Agent
+→ Code
+→ Repair
+```
+
+保证：
+
+> 正确实现。
+
+## Loop 4：Verification Loop
+
+```text
+Build
+→ Test
+→ Security
+→ Performance
+```
+
+保证：
+
+> 正确验证。
+
+## Loop 5：Evidence Loop
+
+```text
+Runtime
+→ Telemetry
+→ Trace
+→ Evidence
+→ Knowledge
+```
+
+保证：
+
+> 真实行为可追溯。
+
+## Loop 6：Meta-Assurance Loop
+
+```text
+Verify
+→ Meta-Verify
+→ Calibrate
+→ Govern
+```
+
+保证：
+
+> 验证体系本身可信。
+
+---
+
+# 68. ANSE 核心控制回路
+
+最终形成：
+
+```text
+INTENT
+   ↓
+SPEC
+   ↓
+PLAN
+   ↓
+CAPABILITY
+   ↓
+AGENT
+   ↓
+HARNESS
+   ↓
+EXECUTE
+   ↓
+VERIFY
+   ↓
+EVIDENCE
+   ↓
+META-VERIFY
+   ↓
+RISK
+   ↓
+AUTONOMY
+   ↓
+RELEASE
+   ↓
+RUNTIME
+   ↓
+DRIFT
+   ↓
+LEARN
+   └──────────────→ INTENT
+```
+
+---
+
+# 69. ANSE Trust Control Model
+
+系统实时维护：
+
+```text
+Trustworthiness
+Risk
+Uncertainty
+Blast Radius
+Evidence
+Autonomy
+```
+
+形成控制关系：
+
+```text
+Trust ↑
+Risk ↓
+Uncertainty ↓
+Evidence ↑
+        ↓
+Autonomy ↑
+```
+
+反之：
+
+```text
+Trust ↓
+Risk ↑
+Uncertainty ↑
+        ↓
+Autonomy ↓
+Human ↑
+```
+
+---
+
+# 70. ANSE 三个核心控制器
+
+整个系统最终可以抽象成三个控制器：
+
+## ① Agent Control
+
+回答：
+
+> Agent 能做什么？
+
+```text
+Identity
+Capability
+Lease
+Budget
+Sandbox
+```
+
+## ② Quality Control
+
+回答：
+
+> Agent 做得是否正确？
+
+```text
+Spec
+Verification
+Evidence
+Meta-Verification
+```
+
+## ③ Autonomy Control
+
+回答：
+
+> Agent 现在应该被允许自主到什么程度？
+
+```text
+Risk
+Confidence
+Uncertainty
+Trustworthiness
+```
+
+三者形成：
+
+```text
+Agent Control
+      ↓
+Quality Control
+      ↓
+Autonomy Control
+      ↓
+Agent Control
+```
+
+---
+
+# 71. ANSE 与传统软件工程对比
+
+| 维度      | Traditional   | AI-assisted   | ANSE                     |
+| ------- | ------------- | ------------- | ------------------------ |
+| 核心生产者   | Human         | Human + AI    | Agent                    |
+| 入口      | Requirement   | Prompt        | Intent                   |
+| 设计      | Document      | Document      | Assurance-driven Spec    |
+| Context | Human Memory  | Prompt        | Impact-aware Context     |
+| 权限      | User Identity | User Identity | Capability Lease         |
+| 执行      | Human         | Human + AI    | Controlled Agent         |
+| 验证      | CI / Human    | CI            | Independent Verification |
+| 知识      | Document      | RAG           | Dual-Truth Knowledge     |
+| 决策      | Human         | Chat          | Immutable Decision       |
+| 审批      | Fixed         | Fixed         | Risk-Adaptive            |
+| 运行反馈    | Ops           | Partial       | Evidence Loop            |
+| 自主      | Low           | Medium        | Adaptive                 |
+| 核心平台    | IDE / DevOps  | AI Coding     | Software Factory         |
+
+---
+
+# 72. ANSE 平台核心模块
+
+完整平台建议划分：
+
+```text
+1. Intent Platform
+
+2. Spec Assurance Platform
+
+3. Engineering Knowledge Platform
+
+4. Impact Analysis Platform
+
+5. Agent Identity Platform
+
+6. Agent Orchestration Platform
+
+7. Capability Control Platform
+
+8. Harness Runtime Platform
+
+9. Verification Platform
+
+10. Evidence Platform
+
+11. Meta-Assurance Platform
+
+12. Risk & Autonomy Platform
+
+13. Supply Chain Security Platform
+
+14. DevOps Integration Platform
+```
+
+---
+
+# 73. 推荐目录结构
+
+```text
+project/
+│
+├── .anse/
+│   ├── intent/
+│   ├── requirements/
+│   ├── specs/
+│   ├── architecture/
+│   ├── adr/
+│   ├── contracts/
+│   ├── invariants/
+│   ├── policies/
+│   ├── tasks/
+│   ├── decisions/
+│   ├── evidence/
+│   ├── knowledge/
+│   └── assurance/
+│
+├── src/
+├── tests/
+├── infrastructure/
+├── ci/
+├── scripts/
+└── docs/
+```
+
+---
+
+# 74. ANSE 核心对象模型
+
+核心工程对象：
+
+```text
+Intent
+Requirement
+Spec
+Architecture
+ADR
+Contract
+Invariant
+Task
+Agent
+Capability
+Lease
+Execution
+Change
+Verification
+Evidence
+Decision
+RuntimeObservation
+Risk
+Assurance
+AutonomyDecision
+```
+
+关系：
+
+```text
+Intent
+ ↓
+Requirement
+ ↓
+Spec
+ ↓
+Task
+ ↓
+Agent
+ ↓
+Lease
+ ↓
+Execution
+ ↓
+Evidence
+ ↓
+Assurance
+ ↓
+Autonomy Decision
+```
+
+---
+
+# 75. ANSE 指标体系
+
+企业不能只看：
+
+```text
+Code Generated
+```
+
+而应建立以下指标。
+
+## Productivity
+
+```text
+Task Throughput
+Lead Time
+Agent Utilization
+Human Hours Saved
+```
+
+## Quality
+
+```text
+Defect Rate
+Escaped Defect
+Regression Rate
+Mutation Detection Rate
+```
+
+## Trust
+
+```text
+False PASS
+False FAIL
+Evidence Completeness
+Assurance Score
+```
+
+## Autonomy
+
+```text
+Autonomous Task Ratio
+Human Intervention Ratio
+Degradation Rate
+Escalation Rate
+```
+
+## Safety
+
+```text
+Capability Violations
+Sandbox Escapes
+Data Exfiltration Events
+Policy Violations
+```
+
+## Knowledge
+
+```text
+Graph Freshness
+Unknown Dependency Rate
+Context Confidence
+Drift Detection Rate
+```
+
+---
+
+# 76. ANSE 分阶段实施路线
+
+## Phase 1：Controlled Coding
+
+```text
+Single Agent
++
+Sandbox
++
+Git
++
+CI
++
+Basic Verification
+```
+
+目标：
+
+```text
+Task
+→ Agent
+→ Code
+→ Test
+→ PR
+```
+
+---
+
+## Phase 2：Spec Engineering
+
+增加：
+
+```text
+Intent
+Requirement
+Spec
+Contract
+ADR
+```
+
+目标：
+
+```text
+Intent
+→ Spec
+→ Code
+→ Verification
+```
+
+---
+
+## Phase 3：Harness Engineering
+
+增加：
+
+```text
+Capability
+Lease
+Sandbox
+Budget
+Policy
+Circuit Breaker
+Identity
+```
+
+---
+
+## Phase 4：Agentic Engineering
+
+增加：
+
+```text
+Planner
+Coder
+Tester
+Reviewer
+Security
+Release
+Scheduler
+```
+
+---
+
+## Phase 5：Trustworthy Autonomous Factory
+
+增加：
+
+```text
+Knowledge
+Impact
+Evidence
+Meta-Verification
+Autonomy Controller
+Runtime Drift
+```
+
+形成：
+
+> Trustworthy Autonomous Software Factory。
+
+---
+
+# 77. 中小团队裁剪版
+
+ANSE 并不要求一次建设完整平台。
+
+最小版本：
+
+```text
+1 Agent
++
+Git
++
+Sandbox
++
+Task Spec
++
+CI
++
+Verification
++
+Basic Evidence
+```
+
+即可形成：
+
+```text
+Task
+→ Agent
+→ Code
+→ Verify
+→ Evidence
+→ PR
+```
+
+---
+
+# 78. 大型企业版本
+
+大型企业最终构建：
+
+```text
+Enterprise ANSE Platform
+│
+├── Identity
+├── Governance
+├── Spec
+├── Knowledge
+├── Agent
+├── Capability
+├── Harness
+├── Verification
+├── Evidence
+├── Risk
+├── Autonomy
+├── Security
+├── Supply Chain
+└── DevOps Integration
+```
+
+---
+
+# 79. ANSE 的终极演进
+
+软件工程未来可能经历：
+
+```text
+Manual Development
+        ↓
+DevOps
+        ↓
+AI-assisted Development
+        ↓
+Agent-assisted Development
+        ↓
+Agent-Native Engineering
+        ↓
+Autonomous Engineering
+        ↓
+Trustworthy Software Factory
+```
+
+变化的本质不是：
+
+> AI 写了多少代码。
+
+而是：
+
+> **谁拥有软件生产过程中的决策权、执行权、验证权和治理权。**
+
+---
+
+# 80. ANSE 最终理论框架
+
+ANSE 2.1 可以最终概括为：
+
+```text
+                 TRUST
+                   │
+        ┌──────────┼──────────┐
+        ↓          ↓          ↓
+     Intent       Spec       Evidence
+        │          │          │
+        └──────────┼──────────┘
+                   ↓
+                Agent
+                   ↓
+              Capability
+                   ↓
+                Execute
+                   ↓
+                Verify
+                   ↓
+             Meta-Verify
+                   ↓
+                 Risk
+                   ↓
+               Autonomy
+                   ↓
+                Govern
+                   ↓
+                Evolve
+```
+
+---
+
+# 81. ANSE 2.1 核心公式
+
+最终不再使用简单的：
+
+```text
+Integrity Product
+```
+
+而定义：
+
+```text
+Trustworthiness
+=
+Weighted Assurance
+×
+Dependency Adjustment
+×
+Evidence Confidence
+×
+Uncertainty Adjustment
+```
+
+同时必须满足：
+
+```text
+Hard Safety Constraints
+```
+
+自主程度：
+
+```text
+Autonomy
+=
+f(
+Trustworthiness,
+Risk,
+Uncertainty,
+Blast Radius,
+Verification Strength
+)
+```
+
+这形成：
+
+> **Trust → Risk → Autonomy Control Loop**
+
+---
+
+# 82. 最终定义
+
+ANSE 2.1 不是：
+
+> 一个 Coding Agent Framework。
+
+也不是：
+
+> 一个 Prompt Engineering 方法。
+
+它是一种新的软件工程范式：
+
+> **通过 Intent、Executable Specification、Engineering Knowledge、Capability Lease、Agent Harness、Independent Verification、Evidence Fabric、Meta-Assurance 和 Risk-Adaptive Autonomy，将代码智能体转化为一种可以在大型软件生产系统中被安全授权、受控执行、独立验证、持续校准和动态降级的自主工程执行单元。**
+
+最终目标是：
+
+# Trustworthy Autonomous Software Factory
+
+即：
+
+> **可信自主软件工厂。**
+
+其最终闭环：
+
+```text
+                    ┌───────────────┐
+                    │    INTENT     │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │     SPEC      │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │     PLAN      │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │   CAPABILITY  │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │     AGENT     │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │    HARNESS    │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │   EXECUTION   │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │ VERIFICATION  │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │    EVIDENCE   │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │ META-ASSURE   │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │     RISK      │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │   AUTONOMY    │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │    RELEASE    │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │    RUNTIME    │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │     DRIFT     │
+                    └───────┬───────┘
+                            ↓
+                        LEARNING
+                            │
+                            └──────────────→ INTENT
+```
+
+这意味着：
+
+> **软件工程正在从“人生产代码”，进入“人治理意图，Agent 执行工程，机器验证结果，运行时提供证据，系统根据风险动态调整自主程度”的新阶段。**
+
+而 ANSE 的最终使命，不是让 Agent 取代软件工程师，而是建立一套能够让**人类意图、机器智能与工程约束共同形成可信软件生产能力**的基础设施。
