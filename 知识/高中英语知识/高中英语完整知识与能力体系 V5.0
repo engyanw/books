@@ -1,0 +1,3033 @@
+# 《高中英语完整知识与能力体系 V5.0》
+
+## ——从知识体系到可计算、可诊断、可验证的英语学习认知基础设施
+
+---
+
+# 1. 体系总览
+
+高中英语不应被理解为“词汇 + 语法 + 阅读 + 写作”的知识清单，而应被建模为一个由：
+
+> **语言知识 → 语篇语用 → 认知加工 → 综合技能 → 核心素养 → 测评诊断 → 学习决策**
+
+共同构成的动态能力系统。
+
+V5.0在V4.0基础上进一步完成三个关键转变：
+
+### 第一，从“层级体系”转向“Ontology + Dimensions”
+
+并非所有概念都适合放进同一条纵向层级。
+
+因此V5.0采用：
+
+> **六层纵向能力/知识体系 + 正交横向维度 + 跨图谱关系**
+
+避免把不同分类标准强行放在同一层级。
+
+---
+
+### 第二，从“五张孤立图谱”转向“统一认知图谱网络”
+
+V5.0保留：
+
+* Knowledge Graph
+* Skill Graph
+* Misconception Graph
+* Assessment Graph
+* Learning Graph
+
+但增加统一的：
+
+> **Cross-Graph Relations**
+
+使五张图谱通过统一ID和标准关系形成一个整体。
+
+---
+
+### 第三，从“学习状态标签”转向“证据驱动的Learner Model”
+
+学生的“掌握/未掌握”不能简单由一次考试正确率决定。
+
+V5.0将学习状态定义为：
+
+> **Learner × Target × Evidence × Time**
+
+的动态状态。
+
+最终形成：
+
+> 测评 → 证据 → 诊断 → 学习决策 → 学习任务 → 再测评 → 状态更新
+
+的闭环。
+
+---
+
+# 2. V5.0总体架构
+
+## 2.1 六层纵向体系
+
+```text
+L6  Core Competency
+    核心素养层
+
+L5  Language Skills
+    综合语言技能层
+
+L4  Cognitive Processing
+    认知加工层
+
+L3  Discourse & Pragmatics
+    语篇与语用层
+
+L2  Language Knowledge
+    语言知识层
+
+L1  Phonological Form & Processing
+    语音形式与加工基础层
+```
+
+---
+
+## 2.2 横向维度
+
+六层体系之外，增加横向维度：
+
+```text
+Context / Culture
+语境与文化
+
+Assessment
+测评
+
+Diagnosis
+诊断
+
+Evidence
+学习证据
+
+Learning
+学习路径与学习决策
+```
+
+其中：
+
+* Context/Culture是内容与情境维度；
+* Evidence是学习证据模型；
+* Assessment、Diagnosis、Learning是系统功能；
+* 不把这些概念强行作为新的知识层。
+
+---
+
+# 3. 六层体系之间的关系
+
+六层体系不是简单的线性流水线，而是存在双向依赖。
+
+基本关系：
+
+```text
+L1 Phonological Form
+        ↓
+L2 Language Knowledge
+        ↓
+L3 Discourse & Pragmatics
+        ↓
+L4 Cognitive Processing
+        ↓
+L5 Language Skills
+        ↓
+L6 Core Competency
+```
+
+但实际学习中存在大量反馈：
+
+```text
+L5 Skill Performance
+        ↓
+暴露
+Knowledge Gap
+        ↓
+L2/L3补强
+        ↓
+Skill Improvement
+```
+
+因此：
+
+> 六层是**结构化组织方式**，不是严格的单向学习流水线。
+
+---
+
+# 4. L1 语音形式与加工基础
+
+## 4.1 Segmental System
+
+### 语音单位
+
+* Phoneme
+* Syllable
+* Onset
+* Rime
+* Sound Contrast
+
+### 书写与表示
+
+* IPA
+* Phonetic Representation
+* Orthography–Sound Mapping
+
+### 音系规则
+
+包括：
+
+* assimilation
+* dissimilation
+* linking
+* elision
+* reduction
+* unreleased stop
+* contraction
+
+这些属于：
+
+> **连续语流中的音系/语音实现规则**
+
+而不再单独设置“语流现象”层。
+
+---
+
+# 5. 超音段系统
+
+## 5.1 核心要素
+
+* Word Stress
+* Sentence Stress
+* Rhythm
+* Intonation
+* Pausing
+* Focus
+
+## 5.2 语用功能
+
+超音段不仅是语音形式，还参与：
+
+* 信息焦点表达
+* 新旧信息区分
+* 态度表达
+* 情绪表达
+* 话语组织
+* 交际意图表达
+
+---
+
+# 6. 语音输入加工路径
+
+```text
+声音
+ ↓
+音段识别
+ ↓
+音节识别
+ ↓
+词边界检测
+ ↓
+词汇识别
+ ↓
+句法解析
+ ↓
+语义建构
+ ↓
+语篇理解
+ ↓
+推理
+ ↓
+交际意图理解
+```
+
+这一过程用于建立：
+
+> Listening Processing Model
+
+---
+
+# 7. 语音输出加工路径
+
+```text
+交际意图
+ ↓
+意义组织
+ ↓
+词汇选择
+ ↓
+句法编码
+ ↓
+语音编码
+ ↓
+发音
+ ↓
+重音/节奏/语调
+ ↓
+连续语流
+ ↓
+交际输出
+```
+
+这一过程用于建立：
+
+> Speaking Production Model
+
+---
+
+# 8. L2 语言知识体系
+
+V5.0将L2重构为两个主要知识域：
+
+```text
+L2 Language Knowledge
+│
+├── Lexical Knowledge
+│
+├── Morphological Knowledge
+│
+└── Syntactic & Grammatical Knowledge
+```
+
+其中：
+
+> Morphology不再简单与Lexicon重复，而是作为词汇结构和语法编码之间的独立知识域。
+
+---
+
+# 9. 词汇知识体系
+
+词汇节点至少包含以下维度：
+
+```text
+Word
+├── Form
+├── POS
+├── Sense
+├── Morphology
+├── Collocation
+├── Chunk
+├── Semantic Relation
+├── Register
+├── Topic
+└── Context
+```
+
+其中：
+
+### Form
+
+* spelling
+* pronunciation reference
+* word family
+
+### POS
+
+* noun
+* verb
+* adjective
+* adverb
+* pronoun
+* preposition
+* conjunction
+* determiner
+* etc.
+
+### Sense
+
+同一词不同语境下的不同意义。
+
+例如：
+
+```text
+charge
+├── 收费
+├── 指控
+├── 充电
+└── 负责
+```
+
+### Collocation
+
+例如：
+
+```text
+make a decision
+take responsibility
+strong evidence
+```
+
+### Chunk
+
+包括：
+
+* lexical chunk
+* phrase
+* formulaic expression
+* sentence frame
+
+---
+
+# 10. 形态知识体系
+
+Morphology作为独立知识域，但与词汇节点建立关联。
+
+```text
+Morphology
+│
+├── Morpheme
+├── Inflection
+├── Derivation
+├── Word Formation
+└── Morphological Rules
+```
+
+例如：
+
+```text
+happy
+ ↓
+unhappy
+ ↓
+happiness
+ ↓
+happily
+```
+
+重点支持：
+
+* 词形识别
+* 词性判断
+* 构词理解
+* 词义推断
+* 正确词形生成
+
+---
+
+# 11. 句法与语法体系
+
+```text
+Syntactic & Grammatical Knowledge
+│
+├── Sentence Structure
+│
+├── Agreement
+│
+├── Predicate System
+│
+├── Non-finite System
+│
+├── Modifier System
+│
+├── Clause System
+│
+└── Special / Complex Structures
+```
+
+---
+
+# 12. Sentence Structure
+
+包括：
+
+* SVO
+* SV
+* SVC
+* SVOO
+* SVOC
+* 主谓结构
+* 并列结构
+* 复杂句结构
+
+---
+
+# 13. Agreement
+
+主谓一致等关系归入：
+
+> Sentence Structure / Agreement
+
+而不再归入谓语系统。
+
+包括：
+
+* subject–verb agreement
+* number agreement
+* pronoun agreement
+* agreement constraints
+
+---
+
+# 14. Predicate System
+
+```text
+Predicate
+├── Tense
+├── Aspect
+├── Voice
+└── Modality
+```
+
+这里不将“8种时态”作为Ontology的固定标准。
+
+系统采用：
+
+> **Tense × Aspect × Voice × Modality**
+
+的组合式模型。
+
+具体课程、教材、地区考试所覆盖的语法范围，由Curriculum Profile配置。
+
+---
+
+# 15. Non-finite System
+
+非谓语动词不能简单归入“修饰系统”。
+
+因为非谓语形式可以承担多种句法功能。
+
+```text
+Non-finite
+├── Infinitive
+├── Gerund
+├── Present Participle
+└── Past Participle
+```
+
+并与：
+
+```text
+Syntactic Function
+├── Subject
+├── Object
+├── Predicative
+├── Complement
+├── Modifier
+└── Adverbial
+```
+
+建立映射关系。
+
+例如：
+
+```text
+To learn English well is important.
+```
+
+To learn：
+
+> Non-finite Form
+
+Subject：
+
+> Syntactic Function
+
+---
+
+# 16. Clause System
+
+```text
+Clause
+├── Noun Clause
+├── Relative Clause
+└── Adverbial Clause
+```
+
+重点覆盖：
+
+### Noun Clause
+
+* subject clause
+* object clause
+* predicative clause
+* appositive clause
+* conjunction selection
+* word order
+* tense relation
+* formal subject/object
+
+### Relative Clause
+
+* relative pronoun
+* relative adverb
+* antecedent
+* restrictive/non-restrictive
+* syntactic function
+
+### Adverbial Clause
+
+* time
+* condition
+* reason
+* result
+* purpose
+* concession
+* comparison
+* manner
+
+---
+
+# 17. Special / Complex Structures
+
+包括：
+
+* inversion
+* emphasis
+* ellipsis
+* substitution
+* cleft constructions
+* comparison
+* existential constructions
+* coordination
+* complex embedding
+
+---
+
+# 18. L3 语篇与语用体系
+
+L3采用多维模型，而不是单一树状分类。
+
+```text
+Discourse
+├── Mode
+├── Purpose
+├── Genre
+├── Structure
+├── Cohesion
+├── Coherence
+├── Context
+└── Pragmatic Function
+```
+
+---
+
+# 19. Mode
+
+```text
+Mode
+├── Written
+├── Spoken
+└── Multimodal
+```
+
+---
+
+# 20. Purpose
+
+```text
+Communicative Purpose
+├── Inform
+├── Narrate
+├── Explain
+├── Describe
+├── Argue
+├── Persuade
+└── Interact
+```
+
+---
+
+# 21. Genre
+
+例如：
+
+```text
+Written
+├── Letter
+├── Email
+├── Notice
+├── Report
+├── Essay
+└── Article
+
+Spoken
+├── Speech
+├── Interview
+├── Dialogue
+└── Presentation
+```
+
+---
+
+# 22. Mode × Purpose × Genre映射
+
+三者不是严格的层级关系，而是：
+
+> **多维映射关系**
+
+例如：
+
+```text
+Written
+ + Inform
+ + Email
+
+Written
+ + Argue
+ + Essay
+
+Spoken
+ + Interact
+ + Interview
+
+Spoken
+ + Persuade
+ + Speech
+```
+
+系统可以记录：
+
+```text
+typicality
+compatibility
+frequency
+```
+
+而不是要求所有组合都必须存在。
+
+---
+
+# 23. 语篇结构
+
+```text
+Structure
+├── Narrative
+├── Expository
+├── Argumentative
+├── Descriptive
+└── Interactive
+```
+
+Purpose与Structure之间建立：
+
+```text
+Purpose
+    ↓
+typical_structure
+```
+
+例如：
+
+```text
+Argue
+ ↓
+Claim
+ ↓
+Evidence
+ ↓
+Reasoning
+ ↓
+Conclusion
+```
+
+---
+
+# 24. Cohesion与Coherence
+
+### Cohesion
+
+包括：
+
+* reference
+* substitution
+* ellipsis
+* conjunction
+* lexical cohesion
+
+### Coherence
+
+包括：
+
+* logical relations
+* topic progression
+* information structure
+* global meaning
+* argument consistency
+
+---
+
+# 25. 语用体系
+
+V5.0采用：
+
+```text
+Pragmatic Function
+        ↓
+Context / Relationship
+        ↓
+Register / Politeness
+        ↓
+Linguistic Realization
+```
+
+---
+
+# 26. 主要交际功能
+
+```text
+Request
+Refusal
+Agreement
+Disagreement
+Suggestion
+Advice
+Apology
+Complaint
+Persuasion
+Clarification
+Confirmation
+Negotiation
+Invitation
+Offering
+Acceptance
+Rejection
+```
+
+---
+
+# 27. 语用语体变化
+
+例如Request：
+
+```text
+Informal
+Can you help me?
+
+Neutral
+Could you help me?
+
+Formal
+I would appreciate it if you could help me.
+```
+
+Refusal：
+
+```text
+Direct
+No, I can't.
+
+Polite
+I'm afraid I can't.
+
+Indirect
+I'm afraid that might be difficult.
+
+Relationship-sensitive
+I really appreciate the offer, but I'm afraid...
+```
+
+Disagreement：
+
+```text
+Direct
+I disagree.
+
+Mitigated
+I'm not sure I completely agree.
+
+Polite
+I see your point, but I think...
+```
+
+因此语用能力不仅是：
+
+> “知道一句话是什么意思”
+
+还包括：
+
+> **在什么关系、什么场景、什么语体下，以什么方式表达。**
+
+---
+
+# 28. L4 认知加工体系
+
+V5.0保留六级认知复杂度：
+
+```text
+C1 Identify / Retrieve
+C2 Understand
+C3 Apply
+C4 Analyze
+C5 Evaluate
+C6 Create
+```
+
+这里借鉴Bloom认知分类思想，但不把英语学习中的全部认知行为机械等同于Bloom taxonomy。
+
+---
+
+# 29. Cognitive Operations
+
+认知层级之外，单独建立：
+
+```text
+Cognitive Operations
+├── Infer
+├── Compare
+├── Classify
+├── Predict
+├── Generalize
+├── Explain
+├── Justify
+├── Evaluate
+└── Integrate
+```
+
+其中：
+
+> **Inference是跨层认知操作，而不是一个固定认知等级。**
+
+---
+
+# 30. 推理体系
+
+Inference进一步细分：
+
+```text
+Inference
+├── Lexical Inference
+├── Referential Inference
+├── Temporal Inference
+├── Causal Inference
+├── Spatial Inference
+├── Intentional Inference
+├── Pragmatic Inference
+├── Argumentative Inference
+└── Evaluative Inference
+```
+
+例如：
+
+### 词义推理
+
+通常表现为：
+
+> C2 Understand / C3 Apply
+
+### 因果推理
+
+通常表现为：
+
+> C3–C4
+
+### 论证推理
+
+通常表现为：
+
+> C4–C5
+
+### 意图推理
+
+可能涉及：
+
+> C4–C5
+
+### 评价性推理
+
+通常涉及：
+
+> C5
+
+因此：
+
+> 推理类型与认知层级采用多对多关系。
+
+---
+
+# 31. 二维能力模型的重新定位
+
+V4.0提出：
+
+> Cognitive Complexity × Autonomy
+
+V5.0不再将其作为独立二维能力模型。
+
+而是将：
+
+> **Autonomy作为Skill的核心属性。**
+
+最终：
+
+```text
+Knowledge
+    ×
+Cognition
+    ×
+Skill
+       │
+       └── autonomy_level
+```
+
+---
+
+# 32. Skill Autonomy
+
+```text
+A1 Controlled
+A2 Contextual
+A3 Autonomous
+A4 Transfer
+```
+
+### Controlled
+
+有提示、有模板、有明确规则。
+
+### Contextual
+
+在真实语境中完成任务。
+
+### Autonomous
+
+无明显提示，自主选择策略和语言资源。
+
+### Transfer
+
+在陌生情境中迁移使用。
+
+因此：
+
+> Recognized不属于Autonomy。
+
+Recognized属于：
+
+> Knowledge State
+
+而不是：
+
+> Skill Autonomy。
+
+---
+
+# 33. Knowledge × Cognition × Skill三维模型
+
+最终形成：
+
+```text
+             Cognition
+                ▲
+                │
+                │
+                ●
+               / \
+              /   \
+             /     \
+            /       \
+     Knowledge ───── Skill
+```
+
+例如：
+
+> 定语从句
+
+可能对应：
+
+```text
+Knowledge:
+K-ENG-GRAM-REL-000001
+
+Cognition:
+C3 Apply
+
+Skill:
+S-ENG-WRITE-GRAM-000001
+
+Autonomy:
+A2 Contextual
+```
+
+从而精确表达：
+
+> 学生知道什么、如何思考、能做什么、能否自主使用。
+
+---
+
+# 34. L5 综合语言技能
+
+```text
+L5 Language Skills
+├── Listening
+├── Speaking
+├── Reading
+├── Viewing
+└── Writing
+```
+
+---
+
+# 35. Reading Skill
+
+包括：
+
+```text
+Reading
+├── Information Retrieval
+├── Main Idea
+├── Detail Understanding
+├── Structure Analysis
+├── Reference Resolution
+├── Vocabulary In Context
+├── Inference
+├── Author Intention
+├── Attitude
+├── Argument Evaluation
+└── Cross-text Integration
+```
+
+---
+
+# 36. Listening Skill
+
+包括：
+
+* sound discrimination
+* word recognition
+* boundary detection
+* key information extraction
+* detail understanding
+* discourse comprehension
+* inference
+* speaker attitude
+* speaker intention
+
+---
+
+# 37. Speaking Skill
+
+包括：
+
+* pronunciation
+* fluency
+* lexical selection
+* grammatical accuracy
+* discourse organization
+* interaction
+* pragmatic appropriateness
+
+---
+
+# 38. Writing Skill
+
+包括：
+
+* task achievement
+* content development
+* organization
+* coherence
+* cohesion
+* vocabulary
+* grammar
+* language accuracy
+* register
+* communicative appropriateness
+
+---
+
+# 39. Viewing Skill
+
+Viewing不是简单的“看图片”。
+
+包括：
+
+* visual information extraction
+* multimodal integration
+* image-text relation
+* visual inference
+* visual argument analysis
+* multimodal meaning construction
+
+---
+
+# 40. 综合语言产出任务
+
+V5.0不将某一种考试题型作为永久Ontology。
+
+综合任务包括：
+
+```text
+Application Writing
+Reading-to-Writing
+Continuation Writing
+Speech
+Presentation
+Dialogue
+Project
+Integrated Communication
+```
+
+---
+
+# 41. 读后续写的Ontology定位
+
+读后续写定义为：
+
+> **Reading + Writing的综合语言技能任务**
+
+建立：
+
+```text
+S-ENG-READ-COMP-xxxx
+        +
+S-ENG-WRITE-GEN-xxxx
+        ↓
+S-ENG-INTEGRATED-CONT-xxxx
+```
+
+其核心能力包括：
+
+* 情节理解
+* 人物模型构建
+* 因果推断
+* 情节预测
+* 内容生成
+* 语篇衔接
+* 语言表达
+* 主题一致性
+
+具体任务的认知层级由题目实际设计决定，不固定绑定C3–C6。
+
+---
+
+# 42. L6 核心素养体系
+
+```text
+L6 Core Competency
+├── Language Ability
+├── Cultural Awareness
+├── Thinking Quality
+└── Learning Ability
+```
+
+但V5.0不再停留于定性描述。
+
+L6必须通过下层节点得到结构化支撑。
+
+---
+
+# 43. 核心素养映射
+
+## Language Ability
+
+主要由：
+
+```text
+L2 Knowledge
++
+L3 Discourse & Pragmatics
++
+L5 Language Skills
+```
+
+共同支撑。
+
+---
+
+## Cultural Awareness
+
+主要涉及：
+
+```text
+L2 Cultural Vocabulary
++
+L3 Context / Pragmatics
++
+L4 Cross-cultural Analysis
++
+L5 Communication
+```
+
+---
+
+## Thinking Quality
+
+重点由：
+
+```text
+C4 Analyze
+C5 Evaluate
+C6 Create
+```
+
+以及：
+
+* inference
+* comparison
+* reasoning
+* justification
+* evaluation
+
+共同支撑。
+
+---
+
+## Learning Ability
+
+主要由：
+
+```text
+Learner Model
++
+Learning Graph
++
+Metacognition
++
+Self-monitoring
++
+Strategy Selection
+```
+
+支撑。
+
+因此L6不再是“顶层口号”，而是：
+
+> **由Knowledge、Skill、Cognition、Context、Learning Behavior共同支撑的综合能力。**
+
+---
+
+# 44. 三大核心系统 + 两大横向维度
+
+V5.0将原五大横向功能重新整理为：
+
+```text
+Core Functions
+├── Assessment
+├── Diagnosis
+└── Learning
+
+Cross-cutting Dimensions
+├── Context / Culture
+└── Evidence
+```
+
+---
+
+# 45. Assessment系统
+
+Assessment的最小单位是：
+
+> **Assessment Item / Task**
+
+一个Assessment Item至少包括：
+
+```text
+Question ID
+Task Type
+Knowledge IDs
+Skill IDs
+Cognitive Profile
+Context
+Expected Response
+Difficulty Profile
+Diagnostic Target
+Evidence Specification
+```
+
+---
+
+# 46. Evidence模型
+
+Evidence不再与Assessment并列作为同一种业务功能。
+
+它表示：
+
+> **学生通过一次行为产生的可观测学习证据。**
+
+例如：
+
+```text
+Answer
+Writing
+Speech
+Response Time
+Hint Usage
+Error Pattern
+Revision Behavior
+Transfer Performance
+```
+
+形成：
+
+```text
+Assessment
+      ↓
+Learner Behavior
+      ↓
+Evidence
+      ↓
+Diagnosis
+```
+
+---
+
+# 47. Difficulty模型
+
+V5.0不采用固定：
+
+> 40% Cognition + 35% Language + 25% Statistics
+
+这样的未经验证权重。
+
+采用：
+
+```text
+Task Difficulty
+│
+├── Cognitive Demand
+├── Linguistic Complexity
+├── Contextual Complexity
+└── Empirical Difficulty
+```
+
+前三者属于：
+
+> Theoretical Difficulty
+
+最后一个属于：
+
+> Empirical Difficulty
+
+---
+
+# 48. 理论难度
+
+### Cognitive Demand
+
+由：
+
+```text
+C1–C6
+```
+
+描述。
+
+### Linguistic Complexity
+
+可考虑：
+
+* vocabulary rarity
+* sentence length
+* syntactic depth
+* embedding depth
+* discourse complexity
+* lexical density
+
+### Contextual Complexity
+
+可考虑：
+
+* information density
+* implicitness
+* cultural dependency
+* ambiguity
+* multimodal integration
+
+---
+
+# 49. 实证难度
+
+实际题目完成后，通过：
+
+* correct rate
+* discrimination
+* response time
+* distractor behavior
+* IRT parameters
+* repeated performance
+
+进行校准。
+
+因此：
+
+```text
+Difficulty Profile
+=
+Theoretical Specification
++
+Empirical Calibration
+```
+
+D1–D5可以作为产品层面的简化标签，但必须建立在上述模型之上，而不能成为理论本体。
+
+---
+
+# 50. Misconception误区体系
+
+误区不是简单的“错误答案分类”。
+
+它代表：
+
+> **学生对知识、语言结构、解题策略或认知过程形成的错误内部模型。**
+
+---
+
+# 51. Misconception分类
+
+采用：
+
+```text
+Primary Type
+├── Knowledge
+├── Strategy
+└── Cognitive
+```
+
+同时支持：
+
+```text
+Secondary Tags
+```
+
+因为一个错误可能具有多个原因。
+
+例如：
+
+```text
+M-ENG-GRAM-REL-000003
+
+Primary:
+Strategy
+
+Secondary:
+Knowledge
+Syntax Analysis
+Mechanical Matching
+```
+
+---
+
+# 52. 误区节点模型
+
+```text
+MisconceptionNode
+├── id
+├── name
+├── primary_type
+├── secondary_tags
+├── wrong_model
+├── correct_model
+├── possible_causes
+├── observable_pattern
+├── related_knowledge
+├── related_skill
+├── diagnostic_probe
+├── remediation
+└── transfer_check
+```
+
+---
+
+# 53. 标准化误区诊断流程
+
+V5.0采用：
+
+```text
+① Evidence Collection
+        ↓
+② Error Pattern Detection
+        ↓
+③ Candidate Cause Generation
+        ↓
+④ Diagnostic Probe
+        ↓
+⑤ Primary / Secondary Cause
+        ↓
+⑥ Knowledge / Skill Gap
+        ↓
+⑦ Remediation
+        ↓
+⑧ Transfer Check
+```
+
+不再规定：
+
+> 必须先判断知识型，再判断策略型，再判断思维型。
+
+因为实际错误可能是多因的。
+
+---
+
+# 54. 定语从句诊断示例
+
+题目：
+
+> This is the place ___ I visited yesterday.
+
+学生：
+
+> where
+
+系统首先记录：
+
+```text
+Observable Pattern:
+地点名词 → where
+```
+
+生成候选原因：
+
+```text
+M1:
+机械关键词匹配
+
+M2:
+无法识别从句成分
+
+M3:
+关系副词/关系代词规则不清
+```
+
+然后通过Diagnostic Probe：
+
+> 在“This is the place ___ I stayed.”中选择关系词。
+
+以及：
+
+> 判断关系词在从句中充当什么成分。
+
+最终确定：
+
+```text
+Primary Cause:
+Syntactic Analysis Gap
+
+Secondary:
+Mechanical Strategy
+```
+
+这样才能真正实现：
+
+> **错题 → 误区 → 知识缺口 → 技能缺口**
+
+---
+
+# 55. 五大核心图谱
+
+V5.0保留五张核心图谱：
+
+```text
+Knowledge Graph
+Skill Graph
+Misconception Graph
+Assessment Graph
+Learning Graph
+```
+
+但五图谱不再是孤立系统。
+
+它们通过：
+
+> **Cross-Graph Relation Layer**
+
+形成统一网络。
+
+---
+
+# 56. Knowledge Graph
+
+核心节点：
+
+* Word
+* Sense
+* Morpheme
+* Grammar Concept
+* Syntax Structure
+* Discourse Concept
+* Pragmatic Function
+* Cultural Concept
+
+核心关系：
+
+```text
+part_of
+has_part
+prerequisite_of
+related_to
+contrasts_with
+synonym_of
+antonym_of
+expressed_by
+used_in
+has_pronunciation
+```
+
+---
+
+# 57. Skill Graph
+
+SkillNode：
+
+```text
+SkillNode
+├── id
+├── name
+├── definition
+├── cognitive_level
+├── cognitive_operations
+├── observable_behavior
+├── prerequisite_skills
+├── autonomy_level
+├── assessment_method
+└── mastery_evidence
+```
+
+---
+
+# 58. Misconception Graph
+
+核心关系：
+
+```text
+misunderstands
+caused_by
+manifests_in
+related_to
+diagnosed_by
+remediated_by
+```
+
+---
+
+# 59. Assessment Graph
+
+核心关系：
+
+```text
+assesses
+requires
+diagnoses
+produces_evidence
+```
+
+---
+
+# 60. Learning Graph
+
+Learning Graph采用四类实体：
+
+```text
+Learning Graph
+│
+├── Objective
+│   └── Learning Goal
+│
+├── Activity
+│   ├── Learning Task
+│   ├── Practice
+│   ├── Assessment
+│   ├── Remediation
+│   └── Transfer Task
+│
+├── Resource
+│   ├── Explanation
+│   ├── Example
+│   ├── Exercise
+│   └── Media
+│
+└── State
+    └── Mastery State
+```
+
+---
+
+# 61. Learning Graph关系
+
+```text
+Task → targets → Goal
+
+Task → develops → Skill
+
+Task → practices → Knowledge
+
+Resource → explains → Knowledge
+
+Resource → supports → Skill
+
+Remediation → remediates → Misconception
+
+Assessment → produces → Evidence
+
+Transfer Task → verifies → Transfer
+```
+
+---
+
+# 62. 跨图谱关系
+
+V5.0新增统一Cross-Graph Relation Layer。
+
+核心关系包括：
+
+```text
+Skill
+  → requires_knowledge
+  → Knowledge
+
+Skill
+  → applies_knowledge
+  → Knowledge
+
+Misconception
+  → misunderstands
+  → Knowledge
+
+Misconception
+  → manifests_in
+  → Skill
+
+Assessment
+  → assesses
+  → Knowledge / Skill
+
+Assessment
+  → diagnoses
+  → Misconception
+
+Assessment
+  → produces
+  → Evidence
+
+LearningTask
+  → targets
+  → Knowledge / Skill
+
+LearningResource
+  → explains
+  → Knowledge
+
+LearningResource
+  → supports
+  → Skill
+
+Remediation
+  → remediates
+  → Misconception
+
+Evidence
+  → evidences_mastery_of
+  → Knowledge / Skill
+
+Evidence
+  → indicates
+  → Misconception
+```
+
+这使五张图谱真正形成：
+
+> **Unified Learning Knowledge Graph**
+
+---
+
+# 63. 统一ID规范
+
+采用：
+
+> **实体类型-领域-子领域-序号**
+
+例如：
+
+```text
+K-ENG-GRAM-REL-000001
+S-ENG-READ-MAIN-000001
+M-ENG-GRAM-TENSE-000003
+Q-ENG-READ-DET-000026
+L-ENG-REM-REL-000001
+```
+
+---
+
+# 64. ID规范
+
+## Entity Type
+
+```text
+K = Knowledge
+S = Skill
+M = Misconception
+Q = Assessment
+L = Learning
+C = Context
+E = Evidence
+R = Resource
+G = Goal
+```
+
+## Domain
+
+```text
+ENG = English
+```
+
+## Sub-domain
+
+例如：
+
+```text
+GRAM
+LEX
+PHON
+READ
+WRITE
+LISTEN
+SPEAK
+DISCOURSE
+PRAG
+CULTURE
+```
+
+---
+
+# 65. ID与版本
+
+实体ID表示：
+
+> **Identity**
+
+版本单独维护：
+
+```text
+id
+version
+status
+created_at
+updated_at
+owner
+```
+
+不要将版本号直接混入实体主ID。
+
+例如：
+
+```text
+K-ENG-GRAM-REL-000001
+version = 1.2
+status = active
+```
+
+这样可以保证：
+
+> 实体身份稳定，实体内容可演进。
+
+---
+
+# 66. Learner Model
+
+V5.0增加：
+
+> **Learner Model**
+
+学习状态不是一个静态节点，而是：
+
+```text
+Learner
+   ×
+Target
+   ×
+Time
+   ×
+Evidence
+```
+
+形成的动态状态。
+
+---
+
+# 67. 学习状态
+
+保留9级状态：
+
+```text
+Unknown
+ ↓
+Introduced
+ ↓
+Recognized
+ ↓
+Understood
+ ↓
+Controlled
+ ↓
+Contextual
+ ↓
+Autonomous
+ ↓
+Mastered
+ ↓
+Transferred
+```
+
+但状态必须由证据驱动。
+
+---
+
+# 68. 学习状态判定
+
+## Recognized
+
+能识别：
+
+* 单词形式
+* 语法结构
+* 基本语言现象
+
+主要证据：
+
+* recognition
+* matching
+* classification
+
+---
+
+## Understood
+
+能够：
+
+* 解释含义
+* 解释规则
+* 说明句意
+* 说明结构
+
+证据：
+
+* explanation
+* paraphrase
+* short answer
+
+---
+
+## Controlled
+
+在提示、模板或明确规则条件下：
+
+> 能正确使用。
+
+证据：
+
+* fill-in
+* transformation
+* sentence construction
+
+---
+
+## Contextual
+
+在真实语境中：
+
+> 能正确使用。
+
+证据：
+
+* cloze
+* reading application
+* contextual writing
+* contextual speaking
+
+---
+
+## Autonomous
+
+无明显提示：
+
+> 能自主选择语言资源和策略。
+
+---
+
+## Mastered
+
+在多个时间点、多个任务中：
+
+> 表现稳定。
+
+---
+
+## Transferred
+
+在陌生情境中：
+
+> 能迁移使用。
+
+---
+
+# 69. Mastery Evidence
+
+学习状态不应只由单次正确率决定。
+
+至少考虑：
+
+```text
+Accuracy
+Consistency
+Independence
+Retention
+Transfer
+Evidence Count
+Recency
+Response Quality
+```
+
+形成：
+
+```text
+MasteryState
+=
+f(
+Accuracy,
+Consistency,
+Independence,
+Retention,
+Transfer,
+Evidence,
+Recency
+)
+```
+
+具体阈值由真实学习数据校准，而不是预先拍脑袋设定。
+
+---
+
+# 70. 教材映射体系
+
+教材不是Ontology。
+
+教材只是：
+
+> **Curriculum View**
+
+关系：
+
+```text
+Curriculum
+ ↓
+Textbook
+ ↓
+Unit
+ ↓
+Learning Objective
+ ↓
+Knowledge
+ ↓
+Skill
+ ↓
+Discourse
+ ↓
+Cognition
+ ↓
+Assessment
+ ↓
+Misconception
+ ↓
+Learning Task
+```
+
+---
+
+# 71. 教材单元五步映射法
+
+## Step 1：主题拆解
+
+提取：
+
+* Topic
+* Situation
+* Cultural Context
+* Communicative Purpose
+
+---
+
+## Step 2：知识提取
+
+提取：
+
+* Vocabulary
+* Morphology
+* Grammar
+* Syntax
+* Discourse
+* Pragmatics
+
+---
+
+## Step 3：技能匹配
+
+确定：
+
+* Listening
+* Speaking
+* Reading
+* Viewing
+* Writing
+
+---
+
+## Step 4：认知定位
+
+确定：
+
+* C1
+* C2
+* C3
+* C4
+* C5
+* C6
+
+以及相关：
+
+* inference
+* comparison
+* prediction
+* evaluation
+* justification
+
+---
+
+## Step 5：测评与诊断映射
+
+建立：
+
+```text
+Unit
+ ↓
+Assessment
+ ↓
+Evidence
+ ↓
+Misconception
+ ↓
+Remediation
+```
+
+---
+
+# 72. 阶段能力模型
+
+V5.0不把固定词汇量、固定时态数量作为Ontology标准。
+
+采用：
+
+> **Curriculum Profile**
+
+建立阶段参考基线。
+
+---
+
+# 73. High 1 Profile
+
+核心目标：
+
+> **基础语言系统建模**
+
+重点：
+
+```text
+Knowledge
+基础词汇、基本语法、基本句法
+
+Cognition
+C1–C3为主
+
+Skill
+基础听说读写
+
+Autonomy
+A1–A2
+```
+
+重点建立：
+
+* 基本词汇网络
+* 基本句型
+* 核心语法结构
+* 基础语篇结构
+* 基本阅读理解
+* 基础表达能力
+
+具体词汇数量、语法项目根据：
+
+> Curriculum Profile
+
+配置。
+
+---
+
+# 74. High 2 Profile
+
+核心目标：
+
+> **复杂语言理解与综合应用**
+
+重点：
+
+```text
+Knowledge
+复杂句法、语篇、语用
+
+Cognition
+C2–C5
+
+Skill
+综合听说读写
+
+Autonomy
+A2–A3
+```
+
+重点发展：
+
+* 长难句解析
+* 多体裁阅读
+* 复杂语篇理解
+* 推理
+* 观点分析
+* 综合写作
+* 交际表达
+
+---
+
+# 75. High 3 Profile
+
+核心目标：
+
+> **综合推理、评价与迁移输出**
+
+重点：
+
+```text
+Knowledge
+综合语言系统
+
+Cognition
+C3–C6
+
+Skill
+综合语言任务
+
+Autonomy
+A3–A4
+```
+
+重点发展：
+
+* 深层阅读
+* 综合推理
+* 论证分析
+* 信息整合
+* 综合写作
+* 综合语言产出
+* 陌生情境迁移
+
+---
+
+# 76. Curriculum Profile机制
+
+阶段目标采用：
+
+```text
+Curriculum Profile
+├── Knowledge Coverage
+├── Skill Distribution
+├── Cognitive Distribution
+├── Autonomy Distribution
+├── Task Complexity
+└── Assessment Profile
+```
+
+这样可以支持：
+
+```text
+全国课程标准
+北京课程体系
+学校课程体系
+考试体系
+校本课程
+```
+
+之间的差异。
+
+---
+
+# 77. 数据结构化标准
+
+V5.0正式进入：
+
+> **English Learning Ontology Data Dictionary**
+
+阶段。
+
+---
+
+# 78. KnowledgeNode
+
+```text
+{
+  id: string,
+  type: enum,
+  domain: enum,
+  sub_domain: enum,
+  name: string,
+  definition: string,
+  prerequisite_ids: string[],
+  related_ids: string[],
+  difficulty_profile: object,
+  examples: object[],
+  curriculum_refs: string[],
+  status: enum,
+  version: string
+}
+```
+
+---
+
+# 79. LexicalNode
+
+```text
+{
+  id: string,
+  word: string,
+  lemma: string,
+  pos: enum[],
+  senses: object[],
+  morphology_ids: string[],
+  collocations: string[],
+  chunks: string[],
+  semantic_relation_ids: string[],
+  register: enum[],
+  topic_ids: string[],
+  context_ids: string[],
+  difficulty_profile: object
+}
+```
+
+---
+
+# 80. SkillNode
+
+```text
+{
+  id: string,
+  name: string,
+  definition: string,
+  cognitive_level: enum[],
+  cognitive_operations: enum[],
+  observable_behavior: object[],
+  prerequisite_skill_ids: string[],
+  requires_knowledge_ids: string[],
+  autonomy_level: enum[],
+  assessment_method_ids: string[],
+  mastery_evidence_types: enum[]
+}
+```
+
+---
+
+# 81. MisconceptionNode
+
+```text
+{
+  id: string,
+  name: string,
+  primary_type: enum,
+  secondary_tags: string[],
+  wrong_model: string,
+  correct_model: string,
+  possible_causes: string[],
+  observable_patterns: object[],
+  related_knowledge_ids: string[],
+  related_skill_ids: string[],
+  diagnostic_probe_ids: string[],
+  remediation_ids: string[],
+  transfer_check_ids: string[]
+}
+```
+
+---
+
+# 82. AssessmentNode
+
+```text
+{
+  id: string,
+  type: enum,
+  prompt: string,
+  knowledge_ids: string[],
+  skill_ids: string[],
+  cognitive_level: enum[],
+  cognitive_operations: enum[],
+  context_ids: string[],
+  difficulty_profile: object,
+  expected_response: object,
+  diagnostic_target_ids: string[],
+  evidence_spec: object
+}
+```
+
+---
+
+# 83. EvidenceNode
+
+```text
+{
+  id: string,
+  learner_id: string,
+  assessment_id: string,
+  target_ids: string[],
+  response: object,
+  response_time: number,
+  correctness: number,
+  error_pattern_ids: string[],
+  evidence_type: enum[],
+  timestamp: datetime
+}
+```
+
+---
+
+# 84. LearningTaskNode
+
+```text
+{
+  id: string,
+  type: enum,
+  target_ids: string[],
+  prerequisite_ids: string[],
+  resource_ids: string[],
+  assessment_ids: string[],
+  remediation_for: string[],
+  transfer_target_ids: string[]
+}
+```
+
+---
+
+# 85. 统一图谱闭环
+
+最终形成：
+
+```text
+                Knowledge
+                   ↓
+                 Skill
+                   ↓
+              Assessment
+                   ↓
+                Evidence
+                   ↓
+               Diagnosis
+                   ↓
+             Misconception
+                   ↓
+              Learning Task
+                   ↓
+               Practice
+                   ↓
+              Reassessment
+                   ↓
+             Mastery Update
+                   ↺
+```
+
+这构成：
+
+> **Evidence-driven Learning Loop**
+
+---
+
+# 86. Learning Policy
+
+V5.0进一步引入：
+
+> **Learning Policy**
+
+它回答：
+
+> 学生下一步应该学习什么？
+
+输入：
+
+```text
+Learner State
+Knowledge Gap
+Skill Gap
+Misconception
+Cognitive Level
+Autonomy
+Recent Performance
+```
+
+输出：
+
+```text
+Next Learning Goal
+Remediation
+Practice
+Assessment
+Transfer Task
+```
+
+---
+
+# 87. 自适应学习决策
+
+例如：
+
+```text
+发现：
+
+K-REL-001 = Understood
+S-READ-REL-001 = Contextual
+M-REL-003 = Active
+```
+
+系统不应该简单推荐：
+
+> 再学一次定语从句。
+
+而应该判断：
+
+```text
+Knowledge基本掌握
+Skill基本掌握
+Strategy Misconception存在
+```
+
+因此下一步：
+
+```text
+Diagnostic Probe
+ ↓
+Strategy Correction
+ ↓
+Targeted Practice
+ ↓
+Transfer Task
+```
+
+这才是真正的：
+
+> Adaptive Learning。
+
+---
+
+# 88. 高中英语学习的真正能力进阶
+
+真正的能力进阶不是：
+
+```text
+背更多单词
+学更多语法
+刷更多题
+```
+
+而是：
+
+```text
+语言形式识别
+      ↓
+语言意义理解
+      ↓
+规则受控使用
+      ↓
+语境化使用
+      ↓
+语篇理解
+      ↓
+推理与分析
+      ↓
+自主表达
+      ↓
+评价与创造
+      ↓
+陌生情境迁移
+```
+
+---
+
+# 89. 英语能力的核心公式
+
+可以将高中英语学习抽象为：
+
+```text
+English Competence
+=
+Knowledge
+×
+Cognition
+×
+Skill
+×
+Autonomy
+×
+Context
+```
+
+但需要注意：
+
+> 这不是简单的数学乘法公式，而是一个多维能力表示模型。
+
+它表达：
+
+> 仅仅“知道”并不等于“会用”。
+
+---
+
+# 90. 从Knowledge System到English Learning OS
+
+传统英语体系：
+
+```text
+词汇
++
+语法
++
+阅读
++
+写作
++
+考试
+```
+
+V5.0：
+
+```text
+Ontology
+    ↓
+Knowledge Graph
+    ↓
+Skill Graph
+    ↓
+Cognitive Model
+    ↓
+Assessment
+    ↓
+Evidence
+    ↓
+Diagnosis
+    ↓
+Learner Model
+    ↓
+Learning Policy
+    ↓
+Adaptive Learning
+```
+
+---
+
+# 91. English Learning OS总体架构
+
+```text
+┌───────────────────────────────────────┐
+│        English Learning OS            │
+├───────────────────────────────────────┤
+│ Core Competency / L6                  │
+├───────────────────────────────────────┤
+│ Language Skills / L5                  │
+├───────────────────────────────────────┤
+│ Cognitive Processing / L4             │
+├───────────────────────────────────────┤
+│ Discourse & Pragmatics / L3           │
+├───────────────────────────────────────┤
+│ Language Knowledge / L2               │
+├───────────────────────────────────────┤
+│ Phonological Form / L1                │
+├───────────────────────────────────────┤
+│ Ontology + Knowledge Graph            │
+│ Skill Graph                           │
+│ Misconception Graph                   │
+│ Assessment Graph                      │
+│ Learning Graph                        │
+├───────────────────────────────────────┤
+│ Evidence & Learner Model              │
+├───────────────────────────────────────┤
+│ Diagnostic Engine                     │
+├───────────────────────────────────────┤
+│ Learning Policy Engine                │
+├───────────────────────────────────────┤
+│ Adaptive Practice / Remediation       │
+└───────────────────────────────────────┘
+```
+
+---
+
+# 92. V5.0核心设计原则
+
+## 原则一：Ontology优先
+
+教材不是Ontology。
+
+考试题型不是Ontology。
+
+学习路径也不是Ontology。
+
+Ontology描述：
+
+> **英语世界中稳定存在的知识、技能、认知、语篇、语用和能力实体。**
+
+---
+
+## 原则二：正交建模
+
+不同分类标准不要强行放在同一棵树上。
+
+例如：
+
+```text
+Mode
+Purpose
+Genre
+Structure
+```
+
+应该采用多维关系，而不是简单父子关系。
+
+---
+
+## 原则三：知识、技能、认知分离
+
+```text
+Knowledge
+≠
+Skill
+≠
+Cognition
+```
+
+三者通过关系连接。
+
+---
+
+## 原则四：认知层级与认知操作分离
+
+```text
+Cognitive Level
++
+Cognitive Operation
+```
+
+例如：
+
+```text
+C4 Analyze
++
+Causal Inference
+```
+
+---
+
+## 原则五：Autonomy属于Skill
+
+不再建立重复的二维能力体系。
+
+```text
+Skill
+└── autonomy_level
+```
+
+---
+
+## 原则六：Evidence驱动诊断
+
+不从：
+
+> “错了一道题”
+
+直接推断：
+
+> “不会这个知识点”。
+
+必须：
+
+```text
+Behavior
+ ↓
+Evidence
+ ↓
+Pattern
+ ↓
+Diagnostic Probe
+ ↓
+Cause
+```
+
+---
+
+## 原则七：理论模型与实证模型分离
+
+例如Difficulty：
+
+```text
+Theoretical Difficulty
++
+Empirical Difficulty
+```
+
+Mastery：
+
+```text
+Conceptual State
++
+Evidence-based Calibration
+```
+
+---
+
+## 原则八：阶段目标参数化
+
+不将：
+
+> 1800词、3500词、8种时态
+
+写死在Ontology。
+
+而通过：
+
+> Curriculum Profile
+
+配置。
+
+---
+
+## 原则九：跨图谱必须可计算
+
+五张图谱必须通过：
+
+```text
+Unified ID
++
+Cross-Graph Relations
+```
+
+连接。
+
+否则只是五个数据库，而不是Learning OS。
+
+---
+
+## 原则十：Learning OS最终必须回答六个问题
+
+```text
+1. 学什么？
+2. 会什么？
+3. 如何思考？
+4. 为什么出错？
+5. 如何证明已经会了？
+6. 下一步应该学什么？
+```
+
+V5.0的目标，就是让这六个问题全部能够由：
+
+> **Ontology + Graph + Evidence + Learner Model + Learning Policy**
+
+共同回答。
+
+---
+
+# 93. V5.0最终体系总图
+
+```text
+                         Core Competency
+                              L6
+                               │
+                               ↓
+                         Language Skills
+                              L5
+                               │
+                               ↓
+                       Cognitive Processing
+                              L4
+                               │
+                               ↓
+                    Discourse & Pragmatics
+                              L3
+                               │
+                               ↓
+                       Language Knowledge
+                              L2
+                               │
+                               ↓
+                 Phonological Form & Processing
+                              L1
+                               │
+              ┌────────────────┼────────────────┐
+              ↓                ↓                ↓
+       Knowledge Graph    Skill Graph    Context/Culture
+              │                │
+              └───────┬────────┘
+                      ↓
+              Assessment Graph
+                      ↓
+                  Evidence
+                      ↓
+             Misconception Graph
+                      ↓
+              Diagnosis Engine
+                      ↓
+              Learner Model
+                      ↓
+              Learning Graph
+                      ↓
+              Learning Policy
+                      ↓
+          Practice / Remediation
+                      ↓
+                 Assessment
+                      ↓
+                   Evidence
+                      ↺
+```
+
+---
+
+# 94. V5.0与V4.0的核心变化
+
+| 领域             | V4.0          | V5.0                              |
+| -------------- | ------------- | --------------------------------- |
+| L2             | 词汇/形态/句法/语法规则 | 词汇/形态/句法语法                        |
+| L1             | 语音+语流         | 语音单位+规则+超音段                       |
+| 语篇             | 多维体系          | 多维映射模型                            |
+| 认知             | C1-C6         | C1-C6 + Cognitive Operations      |
+| 推理             | 跨层操作          | 独立Inference Operation             |
+| Autonomy       | 二维模型          | Skill属性                           |
+| 核心素养           | 定性            | 结构化多对多映射                          |
+| Assessment     | 题目模型          | Assessment + Evidence             |
+| Difficulty     | D1-D5         | 理论难度+实证校准                         |
+| Misconception  | 分类+节点         | Evidence→Probe→Cause              |
+| Graph          | 五图谱           | 五图谱+Cross-Graph                   |
+| Learning Graph | 混合实体          | Objective/Activity/Resource/State |
+| Learner State  | 9级标签          | 9级+多证据动态状态                        |
+| ID             | 示例            | Registry+规范                       |
+| 教材             | Unit映射        | Ontology Mapping Pipeline         |
+| 阶段             | 年级描述          | Curriculum Profile                |
+| 工程化            | 属性描述          | Data Dictionary                   |
+| 自适应            | 学习路径          | Learning Policy                   |
+
+---
+
+# 95. V5.0的定位
+
+V5.0已经不再是一份简单的：
+
+> **《高中英语知识体系》**
+
+而应该定义为：
+
+> **《高中英语认知Ontology与Learning Graph体系》**
+
+它的最终目标不是回答：
+
+> “高中英语有哪些知识点？”
+
+而是回答：
+
+> **“一个学生在什么语言知识、什么认知加工、什么语言技能、什么使用自主性、什么语境下具有什么能力；当他产生错误时，系统如何定位其错误认知，并基于证据决定下一步学习什么。”**
+
+因此，V5.0已经具备向真正的：
+
+> **English Learning OS**
+
+演进的体系基础。
+
+下一阶段的重点不应该继续扩充宏观框架，而应该进入：
+
+> **Ontology实体定义 → Knowledge Node数据字典 → Skill行为定义 → Misconception库 → Assessment Q-Matrix → Evidence Schema → Learner Model → Diagnostic Engine → Learning Policy**
+
+这一工程化阶段。
