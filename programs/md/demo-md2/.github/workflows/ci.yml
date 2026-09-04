@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "17 16 * * *"   # nightly（UTC 16:17）跑 SLO 负载基线门禁
+  workflow_dispatch:        # 手动触发（含 SLO 基线）
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pip install pytest httpx
+      - run: python -c "import main; print('import OK')"
+        env:
+          DOC_DATA_DIR: /tmp/mde_ci
+          REGISTRY_DB_PATH: /tmp/mde_ci/registry.db
+      # 迁移流水线：alembic upgrade head 在临时 SQLite 上验证迁移可应用（PG 模式由 pg job 覆盖）
+      - run: alembic upgrade head
+        env:
+          REGISTRY_DB_PATH: /tmp/mde_ci/alembic.db
+      # 质量门禁：语法编译 + AST 静态检查 + 密钥扫描（任一 error 即阻断，不跑慢测试）
+      - run: python scripts/quality_gate.py --skip-tests
+      # 运行全部集成测试（每个文件独立子进程，失败即中止）
+      # 无 PG 服务时 test_pg*.py 自跳过（_pg_available/_rls_available 守卫），不阻断本 job。
+      - run: bash scripts/run_tests.sh
+        env:
+          APP_ENV: test
+
+  pg:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: demo_md2
+          POSTGRES_PASSWORD: md2pass
+          POSTGRES_DB: demo_md2_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo_md2 -d demo_md2_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pip install asyncpg httpx
+      # PG 迁移：alembic upgrade head 针对真实 PG（env.py 用 DATABASE_URL 走 PG 方言）
+      - run: alembic upgrade head
+        env:
+          APP_ENV: test
+          DATABASE_URL: postgresql://demo_md2:md2pass@127.0.0.1:5432/demo_md2_test
+      # PG 回归：建 schema + 核心流程 + 中文检索（ILIKE 子串，CJK 不退化）
+      - run: python test_pg.py
+        env:
+          APP_ENV: test
+          MD2_PG_TEST_URL: postgresql://demo_md2:md2pass@127.0.0.1:5432/demo_md2_test
+      # 建 md2_rls 非超级用户角色 + 授权（复刻 setup_pg_rls.sh，CI 内用 asyncpg 走 demo_md2 超管）
+      - run: |
+          python - <<'PY'
+          import asyncio, asyncpg
+          DSN = "postgresql://demo_md2:md2pass@127.0.0.1:5432/demo_md2_test"
+          async def main():
+              c = await asyncpg.connect(DSN)
+              await c.execute("DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='md2_rls') THEN CREATE ROLE md2_rls WITH LOGIN PASSWORD 'rlspass' NOSUPERUSER NOBYPASSRLS; ELSE ALTER ROLE md2_rls WITH LOGIN PASSWORD 'rlspass' NOSUPERUSER NOBYPASSRLS; END IF; END $$;")
+              await c.execute("GRANT USAGE ON SCHEMA public TO md2_rls;")
+              await c.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON users, teams, team_members, team_roles, audit_log, notifications TO md2_rls;")
+              await c.execute("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO md2_rls;")
+              await c.execute("GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO md2_rls;")
+              await c.close()
+          asyncio.run(main())
+          print("RLS role ready")
+          PY
+      # RLS 多租户隔离验证（md2_rls 受策略约束）
+      - run: python test_pg_rls.py
+        env:
+          APP_ENV: test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # 后端依赖（uvicorn 起 :8000 给 vite 代理）
+      - run: pip install -r backend/requirements.txt
+      - run: pip install uvicorn
+      # 前端依赖
+      - run: npm ci
+      # Playwright 浏览器 + 系统依赖
+      - run: npx playwright install --with-deps chromium
+      # 运行 e2e：playwright.config.js 的 webServer 数组同时拉起后端(8000)与 vite(3000)
+      # 覆盖：登录/注册/退出、新建云端文档→编辑→保存→刷新重开持久、本地文档导出 .md 下载
+      - run: npm run test:e2e
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+
+  slo-nightly:
+    # nightly SLO 负载基线门禁：基线场景（20 并发/30s）违反失败率或 p99 阈值即标红阻断。
+    # 仅 nightly 跑（非每 PR），避免拖慢常规流水线；也可 workflow_dispatch 手动触发。
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pip install locust uvicorn
+      # 基线运行器：拉起 uvicorn → 轮询 /ready → locust headless → check_slo.py 判定门禁
+      # 违例（失败率>0 或 p99>SLO_MAX_P99_MS）→ 非 0 退出 → job 标红
+      - run: bash ../deploy/load/run_baseline.sh
