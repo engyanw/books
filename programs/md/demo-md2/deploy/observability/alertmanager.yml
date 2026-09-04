@@ -1,0 +1,95 @@
+# Alertmanager 路由配置 —— 企业团队文档开发平台（md-docs）
+#
+# 与 alerts.yml 的标签约定对齐：
+#   severity: critical | warning   team: md-docs
+# 路由策略：
+#   critical → oncall-pg（PagerDuty，立即拉起值班）
+#   warning  → slack-mdocs（团队频道，工作时段关注）
+# 抑制：同一 alertname+team 已有 critical 触发时，抑制其 warning，避免双通道噪音。
+#
+# 密钥注入：Alertmanager 不支持运行时环境变量插值，secret 在部署期由配置渲染
+# （helm/kustomize/ansible）替换占位符。占位符格式：<SECRET:NAME>。
+#   SLACK_WEBHOOK_URL  → Slack Incoming Webhook
+#   PAGERDUTY_ROUTING_KEY → PagerDuty Events API v2 routing key
+# 部署：alertmanager --config.file=alertmanager.yml --storage.path=/var/lib/alertmanager
+# 验证：amtool check-config alertmanager.yml
+global:
+  resolve_timeout: 5m          # 告警恢复后等多久再发 resolved
+  http_config:
+    follow_redirects: true
+
+# 路由树：先按 severity 分发，其余走默认（slack 频道）
+route:
+  receiver: slack-mdocs        # 默认接收方（未命中子路由的告警，主要是 warning）
+  group_by: ["alertname", "team", "severity"]
+  group_wait: 30s              # 同组首条告警等待 30s 聚合后发出
+  group_interval: 5m           # 同组后续告警最小间隔
+  repeat_interval: 4h          # 同一告警重复通知间隔（避免轰炸）
+  routes:
+    # critical → PagerDuty oncall（立即、独立成组、不进默认通道）
+    - matchers:
+        - severity="critical"
+      receiver: oncall-pg
+      group_by: ["alertname"]
+      group_wait: 0s           # critical 不等聚合，立即发出
+      repeat_interval: 1h
+      continue: false
+    # warning → Slack 团队频道
+    - matchers:
+        - severity="warning"
+      receiver: slack-mdocs
+      continue: false
+    # leader 相关 warning 单独路由到 ops 频道（便于值班聚焦基础设施）
+    - matchers:
+        - severity="warning"
+        - alertname=~"MdNoLeader|MdLeaderFlap"
+      receiver: slack-ops
+      continue: false
+
+receivers:
+  # 值班 PagerDuty（critical，7×24 拉起）
+  - name: oncall-pg
+    pagerduty_configs:
+      - routing_key: "<SECRET:PAGERDUTY_ROUTING_KEY>"
+        severity: critical
+        send_resolved: true
+        description: '{{ .CommonLabels.team }} / {{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+
+  # 团队频道（warning + 默认）
+  - name: slack-mdocs
+    slack_configs:
+      - api_url: "<SECRET:SLACK_WEBHOOK_URL>"
+        channel: "#md-docs-alerts"
+        send_resolved: true
+        title: '{{ .Status | toUpper }} [{{ .Labels.severity }}] {{ .CommonLabels.alertname }}'
+        text: >
+          {{ range .Alerts -}}
+          *{{ .Labels.alertname }}* ({{ .Labels.severity }})
+          {{ .Annotations.summary }}
+          {{ .Annotations.description }}
+          {{- end }}
+        actions:
+          - type: button
+            text: "查看 /metrics"
+            url: "http://md-docs-backend:8000/metrics"
+
+  # 运维频道（leader/选举类 warning）
+  - name: slack-ops
+    slack_configs:
+      - api_url: "<SECRET:SLACK_WEBHOOK_URL>"
+        channel: "#md-docs-ops"
+        send_resolved: true
+        title: '{{ .Status | toUpper }} [infra] {{ .CommonLabels.alertname }}'
+
+# 抑制规则：critical 在场则压低同源 warning（双通道降噪）
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ["alertname", "team"]
+
+# 静默期建议（非配置项，操作指引）：
+#   计划内维护窗口用 amtool silence add --duration=2h --comment="维护窗口" \
+#     --author=oncall team=md-docs
+#   紧急静默全部：amtool silence add --duration=15m --comment="事故止血" team=md-docs
