@@ -1,0 +1,64 @@
+{{- /* 后端 Deployment：RollingUpdate（maxUnavailable=0 近似蓝绿）+ 就绪/存活探针 + 优雅关闭 */ -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels: { app.kubernetes.io/name: md-docs, app.kubernetes.io/instance: {{ .Release.Name }} }
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: {{ .Values.backend.strategy.type }}
+    {{- if eq .Values.backend.strategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.backend.strategy.rollingUpdate.maxUnavailable | default 0 }}
+      maxSurge: {{ .Values.backend.strategy.rollingUpdate.maxSurge | default 1 }}
+    {{- end }}
+  selector:
+    matchLabels: { app.kubernetes.io/name: md-docs, app.kubernetes.io/component: backend }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: md-docs, app.kubernetes.io/component: backend }
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.backend.terminationGracePeriodSeconds }}
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports: [{ containerPort: 8000 }]
+          env:
+            - name: APP_ENV
+              value: {{ .Values.backend.env.APP_ENV | quote }}
+            - name: LEADER_ELECTION_ENABLED
+              value: {{ .Values.backend.env.LEADER_ELECTION_ENABLED | quote }}
+            - name: MULTI_INSTANCE_HA
+              value: {{ .Values.backend.env.MULTI_INSTANCE_HA | quote }}
+            {{- if .Values.backend.env.DATABASE_URL }}
+            - name: DATABASE_URL
+              value: {{ .Values.backend.env.DATABASE_URL | quote }}
+            {{- end }}
+            {{- if .Values.backend.env.REDIS_URL }}
+            - name: REDIS_URL
+              value: {{ .Values.backend.env.REDIS_URL | quote }}
+            {{- end }}
+            - name: DOC_DATA_DIR
+              value: {{ .Values.backend.env.DOC_DATA_DIR | quote }}
+          {{- with .Values.backend.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet: { path: {{ .Values.backend.probes.livenessPath }}, port: 8000 }
+            initialDelaySeconds: {{ .Values.backend.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.probes.periodSeconds }}
+          readinessProbe:
+            httpGet: { path: {{ .Values.backend.probes.readinessPath }}, port: 8000 }
+            initialDelaySeconds: {{ .Values.backend.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.probes.periodSeconds }}
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-data
+{{- if and (not .Values.postgres.enabled) }}
+{{- end }}
