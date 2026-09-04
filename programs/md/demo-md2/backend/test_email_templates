@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+"""邮件模板系统：Jinja2 渲染 + 退信处理。"""
+import os, tempfile, asyncio
+from email_templates import render_template, send_templated_email, _log_bounce
+
+# 1) 渲染 guest_invite
+subject, body = render_template("guest_invite", {
+    "guest_name": "alice", "inviter": "bob", "invite_url": "http://x.test/invite?t=abc"
+})
+assert "邀请你加入" in subject, subject
+assert "alice" in body and "bob" in body and "http://x.test/invite" in body, body
+
+# 2) 渲染 review_request（含 mode_desc/step_desc 变量）
+subject2, body2 = render_template("review_request", {
+    "reviewer_name": "carol", "requester": "dave", "doc_title": "设计文档",
+    "mode_desc": "并行会签", "step_desc": "第 2/3 步", "link": "http://x.test/r/1",
+})
+assert "设计文档" in subject2 and "并行会签" in subject2, subject2
+assert "carol" in body2 and "dave" in body2 and "第 2/3 步" in body2, body2
+
+# 3) 渲染 share_notify（Jinja if 控制：无 expires 不含有效期）
+subject3, body3 = render_template("share_notify", {
+    "sharer": "eve", "doc_title": "周报", "link": "http://x.test/s/1"
+})
+assert "周报" in subject3
+assert "有效期至" not in body3, "无 expires 时不应含有效期"
+body3b = render_template("share_notify", {
+    "sharer": "eve", "doc_title": "周报", "link": "http://x.test/s/1", "expires": "2026-12-31"
+})[1]
+assert "有效期至 2026-12-31" in body3b, body3b
+
+# 4) 未知模板抛错
+try:
+    render_template("nope", {})
+    raise SystemExit("应抛错")
+except ValueError:
+    pass
+
+# 5) 退信日志（设 BOUNCE_LOG 文件）
+bl = tempfile.mktemp(suffix=".log")
+os.environ["BOUNCE_LOG"] = bl
+import email_templates as _et
+_et.BOUNCE_LOG = bl
+_log_bounce("a@b.test", "subj", "test_reason")
+assert "a@b.test" in open(bl).read()
+
+# 6) send_templated_email 在无 SMTP 配置时重试后失败返回 False（不抛错）
+os.environ.pop("SMTP_HOST", None); os.environ.pop("SMTP_FROM", None)
+import main  # noqa
+async def _send():
+    return await send_templated_email("x@y.test", "guest_invite", {"guest_name": "z", "inviter": "w", "invite_url": "u"}, max_retries=2)
+ok = asyncio.run(_send())
+assert ok is False, "无 SMTP 应投递失败返回 False"
+
+print("ALL PASSED")
