@@ -1,0 +1,13 @@
+apiVersion: v2
+name: md-docs
+description: 企业团队文档开发平台（demo-md2）Helm chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - markdown
+  - collaboration
+  - enterprise
+  - crdt
+maintainers:
+  - name: demo-md2
