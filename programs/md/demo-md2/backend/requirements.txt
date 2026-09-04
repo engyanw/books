@@ -1,0 +1,13 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+httpx>=0.26.0
+pydantic>=2.0.0
+aiosqlite>=0.20.0
+cryptography>=42.0
+sentry-sdk>=1.40
+aiosmtplib>=3.0
+asyncpg>=0.29
+alembic>=1.13
+sqlalchemy>=2.0  # alembic env.py SQLite 在线迁移驱动
+jinja2>=3.1
+#y-py>=0.6.2  # 可选：服务端 Yjs CRDT 合并（_collab_server_merge，导入名 y_py）；未安装时协同降级为客户端驱动快照
