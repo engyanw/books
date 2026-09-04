@@ -1,0 +1,66 @@
+# 企业团队文档开发平台 Helm values
+# 多实例 HA 部署：建议 backend.replicaCount>=2 + postgres.enabled=true（PG 单库模式）
+# 蓝绿/金丝雀：设 backend.strategy.rollingUpdate 或引入 argo-rollouts；本 chart 默认 RollingUpdate。
+
+replicaCount: 2
+
+backend:
+  image:
+    repository: md-docs
+    tag: latest
+    pullPolicy: IfNotPresent
+  # 资源请求/限制（企业生产基线）
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "2000m", memory: "4Gi" }
+  # 多实例一致性：PG 模式才真正 active/active 安全（见 _storage_mode_info）
+  env:
+    APP_ENV: production
+    # PG 单库模式（多实例 HA 推荐）
+    DATABASE_URL: ""  # postgresql://user:pass@pg:5432/md2
+    REDIS_URL: ""     # redis://redis:6379/0（多实例限流/协同广播必需）
+    LEADER_ELECTION_ENABLED: "true"
+    MULTI_INSTANCE_HA: "true"
+    # 切 PG 后 SQLite 路径仅历史迁移用
+    DOC_DATA_DIR: /app/data
+  # 优雅关闭：后台任务 drain + 连接池关闭
+  terminationGracePeriodSeconds: 40
+  # 就绪/存活探针（/ready 校验 DB+Redis，/health 仅存活）
+  probes:
+    livenessPath: /health
+    readinessPath: /ready
+    initialDelaySeconds: 15
+    periodSeconds: 30
+  # 滚动更新（近似蓝绿：maxUnavailable=0 保证新实例 ready 才下旧）
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+
+# PostgreSQL 子 chart（企业生产建议用托管 PG，此处给开箱即用选项）
+postgres:
+  enabled: false
+  image: postgres:16
+  persistence: { enabled: true, size: 20Gi }
+  credentials:
+    user: md2
+    password: ""  # 必须由 secrets 注入
+    db: md2
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+  persistence: { enabled: true, size: 5Gi }
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: false
+  className: nginx
+  hosts: []
+  #  - host: docs.example.com
+  #    paths: [{ path: /, pathType: Prefix }]
+
+# 金丝雀：设 backend.strategy.rollingUpdate.maxSurge=1 即可逐步替换；
+# 精细化流量切分建议接入 Argo Rollouts / Flagger（不内置，避免耦合）。
