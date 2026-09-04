@@ -1,0 +1,1328 @@
+# 《公有云AI安全事件日志与语义规范 V2.1》
+**版本**：V2.1  
+**定位**：基于 OCSF 的公有云 AI 安全事件语义与可信日志规范  
+**适用范围**：公有云内部AI服务、AI平台、AI Agent、模型服务、RAG服务、AI安全服务及第三方AI服务提供商  
+**规范状态**：企业级技术规范  
+**发布日期**：2026年09月
+
+---
+
+## 一、规范定位与建设目标
+### 1.1 建设背景
+随着大语言模型、生成式人工智能、AI Agent、RAG、多模态模型以及模型即服务（Model as a Service）快速进入公有云生产环境，传统以网络流量、API调用和主机行为为核心的安全日志体系，已经无法完整描述AI场景中的安全事实。
+
+传统安全日志的描述范式为：
+> **用户 → API → 服务 → 网络 → 主机 → 结果**
+
+AI安全场景的描述范式已演进为：
+> **用户 → Prompt → Agent → LLM → RAG → Tool → External API → Context → Token → Compute → Response → Security Decision → Remediation**
+
+攻击者的攻击对象也从传统的网络、主机、应用，逐步扩展到Prompt、Context、Model、Dataset、Embedding、Knowledge Base、Tool、Agent、Token、GPU、Inference Runtime等AI原生对象。
+
+因此，本规范的目标不是简单统一AI日志字段格式，而是建立一套能够完整描述“AI安全事实”的统一语义体系，支撑安全检测、攻击溯源、合规审计与运营响应。
+
+### 1.2 核心定位
+本规范定位为：**基于OCSF的公有云AI安全事件语义与可信日志规范**。
+
+核心目标从传统的“日志格式统一”，升级为**“安全事实统一表达、统一关联、统一溯源、统一治理和统一运营”**：
+- **统一表达**：不同厂商、不同服务的安全事件采用同一套语义描述，消除语义歧义
+- **统一关联**：跨服务、跨环节事件可通过统一标识体系关联，形成完整事件链
+- **统一溯源**：从推理端点到模型、数据集、训练过程的全链路可追溯
+- **统一治理**：敏感数据、身份、完整性、生命周期采用同一套治理规则
+- **统一运营**：支撑统一的SOC检测、告警、调查、响应、合规审计流程
+
+### 1.3 设计原则
+#### 原则一：不重新发明OCSF
+凡OCSF已经存在的Event Class、Profile、Object、Attribute和Enum，必须优先复用。避免自定义语义导致的生态割裂，最大化降低与现有SIEM、安全数据湖、SOC平台的对接成本。
+
+#### 原则二：标准优先于扩展
+AI语义首先寻找OCSF原生表达方式，仅在目标OCSF正式版本无法表达时，才使用企业Extension。企业扩展必须受控、可注册、可追溯，避免无序扩展。
+
+#### 原则三：安全事实优先于业务字段
+日志首先保证能够回答安全七问：
+1. 谁做了什么？
+2. 访问了什么资源？
+3. 使用了哪个模型/工具？
+4. 产生了什么结果？
+5. 存在什么安全风险？
+6. 采取了什么处置措施？
+7. 整个过程如何关联？
+
+业务字段按需补充，不得冲击安全核心字段的位置与必填性。
+
+#### 原则四：敏感数据最小化
+日志不是AI原始数据存储系统。默认记录安全元数据、内容指纹和引用标识，不默认记录Prompt、Response等敏感原文。降低隐私合规风险，收缩数据泄露面。
+
+#### 原则五：可关联、可追溯、可验证
+任何高价值AI安全事件都必须能够关联到完整链路：
+> User → Session → Trace → Span → Model → Tool → Dataset → Security Finding → Remediation
+
+每个环节可校验、可溯源、可审计。
+
+#### 原则六：降级不能破坏安全能力
+日志标准化、隐私检测或传输异常时，可以降级数据格式，但不得丢失最小安全字段集（MSES）。保障极端故障场景下，基础安全监测能力不失效。
+
+#### 原则七：正式版本基线原则
+以正式发布的OCSF Release版本为标准基线。尚未进入正式Release的Issue、Proposal、PR或实验性能力，不得标识为OCSF原生标准，仅可作为企业扩展能力。避免非稳定特性导致的兼容断裂。
+
+---
+
+## 二、总体技术架构
+### 2.1 总体架构
+本规范采用**“一个标准核心、四类语义、六项治理能力”**的总体架构。
+
+- **一个标准核心**：OCSF（Open Cybersecurity Schema Framework）作为整个规范的语义底座
+- **四类核心语义**：Event Semantic（事件语义）、AI Semantic（AI领域语义）、Security Semantic（安全检测语义）、Lineage Semantic（数据血缘语义）
+- **六项横向治理能力**：Privacy Governance（隐私治理）、Identity Governance（身份治理）、Integrity Governance（完整性治理）、Lifecycle Governance（生命周期治理）、Compliance Governance（合规治理）、Third-party Governance（第三方治理）
+
+整体数据流自上而下贯穿各层：
+> AI业务与安全事件 → 安全检测语义层 → AI领域语义层 → OCSF标准语义层 → 日志采集与传输层 → 存储、分析与安全运营平台
+
+六项治理能力横向贯穿所有层级，在每个处理环节同步生效。
+
+### 2.2 OCSF语义层
+负责所有安全事件通用的基础语义描述，是对接现有安全生态的基础。
+统一描述维度包括：事件类型、事件时间、事件主体、资源、活动、结果、严重程度、状态、生产者、Schema版本、云环境、身份、网络上下文、资源上下文。
+
+该层原则上不允许企业重新定义已经存在的OCSF字段，严格遵循原生语义。
+
+### 2.3 AI领域语义层
+负责描述传统安全日志无法表达的AI原生事实，是AI场景的核心语义扩展。
+
+核心对象包括：
+AI Operation、AI Model、AI Agent、Delegation、Message Context、Tool、RAG、Dataset、Embedding Model、Knowledge Base、Model Artifact、AI Runtime、Token Usage、AI Content。
+
+**复用规则**：
+- 对于OCSF已经正式支持的AI对象和Profile，直接复用；
+- 对于尚未被目标OCSF版本正式覆盖的对象，通过企业Extension实现。
+
+### 2.4 安全检测语义层
+主要用于描述AI场景下的安全检测结果与威胁类型。
+
+覆盖典型安全事件：Prompt Injection、Jailbreak、Data Poisoning、Model Theft、API Abuse、Credential Abuse、RAG Injection、Tool Abuse、Agent Loop、Resource Exhaustion、Model Supply Chain Attack、Malicious Plugin、Unauthorized Data Access、Sensitive Data Leakage等。
+
+**设计规则**：检测事件优先映射到OCSF原生`Detection Finding`事件类，不建立与OCSF平行的独立AI Security Event Class。威胁分类作为检测语义的标签维度，不替代OCSF事件类型体系。
+
+### 2.5 数据血缘语义层
+建立**AI Asset Graph**（AI资产图），描述AI资产之间的派生、训练、部署、调用关系，支撑全链路溯源。
+
+#### 节点类型
+User、Dataset、Base Model、Fine-tuned Model、Adapter、Prompt Template、Embedding Model、Knowledge Base、Document、Tool、Plugin、Agent、Deployment、Endpoint
+
+#### 节点通用属性
+asset_id、asset_type、version、owner、content_fingerprint、security_status、classification
+
+#### 关系类型
+trained_on、derived_from、fine_tuned_from、attached_to、loaded_by、deployed_as、retrieved_from、invoked_by、modified_by、approved_by
+
+#### 关系通用属性
+source、target、relation_type、operation_time、operator、proof_hash、signature、approval_id
+
+### 2.6 安全运营层
+最终日志输出支撑的运营流程包括：实时检测、告警、事件关联、攻击链分析、威胁狩猎、安全调查、合规审计、模型供应链审计、AI运营分析、风险管理。
+
+---
+
+## 三、OCSF标准对齐规范
+### 3.1 OCSF复用优先级
+企业AI日志字段必须按照以下优先级进行设计，优先级从高到低：
+
+| 优先级 | 层级 | 说明 |
+|--------|------|------|
+| Level 1 | OCSF Event Class | 优先选择最合适的原生事件类承载事件 |
+| Level 2 | OCSF Profile | 优先通过Profile向事件类注入扩展字段 |
+| Level 3 | OCSF Object | 优先使用原生对象描述实体 |
+| Level 4 | OCSF Attribute / Enum | 优先使用原生属性和枚举值 |
+| Level 5 | 企业Extension | 仅当前四级无法表达时，才允许新增企业扩展字段 |
+
+**设计要求**：新增字段必须经过复用性评估，证明前四级确实无法覆盖，方可进入扩展注册流程。
+
+### 3.2 企业Extension规范
+#### 3.2.1 命名规范
+企业扩展字段必须使用统一企业前缀，避免与未来OCSF官方字段命名冲突。
+- 推荐格式：`ent_ai_xxx`（AI领域扩展）、`ent_security_xxx`（安全检测扩展）、`ent_lineage_xxx`（数据血缘扩展）
+- 禁止使用：`ai.xxx`、`custom.xxx`、`security.xxx`等无前缀通用命名
+
+#### 3.2.2 注册要求
+所有企业扩展必须在统一扩展注册中心登记，注册信息包括：
+extension_name、owner、version、description、data_type、classification、source、retention、compatibility、deprecation_status。
+
+### 3.3 Schema版本
+所有事件必须携带完整的版本标识，接收系统根据版本匹配对应解析器。
+
+必填版本字段：
+- `metadata.version`：OCSF Schema版本号，如`1.9.0`
+- `metadata.product`：生产者产品信息，包含name、vendor_name、version
+- `metadata.extension.name`：企业扩展名称
+- `metadata.extension.version`：企业扩展版本
+- `metadata.original_event_code`：厂商原始事件编码，用于排障和映射回溯
+
+### 3.4 事件ID
+#### 3.4.1 基本要求
+事件必须具备唯一`event_uid`，满足：
+- 全局唯一：跨租户、跨厂商、跨服务不重复
+- 不可复用：同一事件仅分配一个ID，不得重复使用
+- 可幂等：可作为幂等主键去重
+- 可追踪：可通过ID关联相关审计与处置事件
+
+#### 3.4.2 生成方案
+推荐采用**UUIDv7**（时间排序型UUID）或等效方案，兼顾全局唯一性与时间排序性。
+`event_uid`作为日志系统默认幂等主键。
+
+### 3.5 type_uid
+#### 3.5.1 原生规则
+所有事件优先遵循OCSF原生`type_uid`计算规则：
+```
+type_uid = class_uid × 100 + activity_id
+```
+不得随意创建与OCSF官方编码冲突的事件编码。
+
+#### 3.5.2 扩展规则
+如果企业Extension必须增加事件活动类型，应按照企业扩展注册机制管理，活动ID取值必须落在OCSF预留的厂商扩展区间（1000及以上），不得覆盖OCSF官方枚举值。
+
+---
+
+## 四、基础事件字段规范
+每一条AI安全日志至少必须包含以下核心字段，构成安全事件的基础骨架。
+
+| 字段 | 所属对象 | 说明 | 要求 |
+|------|----------|------|------|
+| event_uid | 顶层 | 事件唯一标识 | 必填，UUIDv7 |
+| time | 顶层 | 事件实际发生时间 | 必填，UTC RFC3339格式 |
+| activity_id | 顶层 | 活动类型枚举ID | 必填，OCSF标准值 |
+| class_uid | 顶层 | 事件类ID | 必填，OCSF标准值 |
+| type_uid | 顶层 | 事件类型ID | 必填，class_uid×100+activity_id |
+| category_uid | 顶层 | 事件类别ID | 必填，OCSF标准值 |
+| severity_id | 顶层 | 事件严重程度ID | 必填，0未知/1低/2中/3高/4严重 |
+| status_id | 顶层 | 事件执行状态ID | 必填，OCSF标准值 |
+| metadata.version | metadata | OCSF Schema版本 | 必填 |
+| metadata.product | metadata | 生产者产品信息 | 必填 |
+| metadata.extension.version | metadata | 企业扩展版本 | 必填 |
+| actor | 顶层 | 操作主体 | 必填，至少包含用户/服务身份 |
+| resource | 顶层 | 被操作资源对象 | 必填，至少包含uid、name、type |
+| cloud | 顶层 | 云环境信息 | 必填，至少包含account_uid、region |
+| trace_id | 顶层 | 调用链追踪ID | 必填，用于跨事件关联 |
+| producer | 顶层 | 日志生产者标识 | 必填 |
+
+补充说明：
+- `ingest_time`：日志进入平台时间，由接入网关自动填充，用于计算端到端延迟。
+- 所有时间字段统一使用UTC，禁止使用本地时区，避免跨区域时序混乱。
+
+---
+
+## 五、身份与资源标识规范
+### 5.1 身份标识
+#### 5.1.1 复用原则
+优先复用OCSF原生`actor`、`user`、`account`、`cloud`等对象承载身份信息，不得重新定义独立的Identity体系。
+
+#### 5.1.2 身份类型
+身份信息必须支持以下类型：tenant（租户）、account（云账号）、user（用户）、application（应用）、service（服务）、agent（AI Agent）、workload（工作负载）。
+
+### 5.2 资源标识
+统一采用OCSF原生`resource`对象的三元组标识：
+- `resource.uid`：资源唯一ID
+- `resource.name`：资源名称
+- `resource.type`：资源类型
+
+结合`cloud.account_uid`、`cloud.region`、`cloud.organization`实现跨云环境资源的唯一定位。
+
+### 5.3 命名空间
+#### 5.3.1 原生方案
+原则上不增加独立`namespace`字段。跨租户唯一性通过`cloud.account_uid + resource.uid`的组合实现，天然兼容OCSF原生结构。
+
+#### 5.3.2 扩展方案
+如企业确实存在跨云资源统一编号需求，可通过Extension增加`ent_resource.global_id`字段。但该字段不能替代OCSF原生`resource`对象，仅作为全局检索的辅助索引。
+
+---
+
+## 六、敏感数据治理规范
+### 6.1 敏感内容范围
+以下内容统一纳入AI敏感数据治理范畴，覆盖输入、输出、中间态、配置态全链路：
+- 交互类：Prompt、Response、System Instruction
+- 工具类：Tool Definition、Tool Argument、Tool Result
+- RAG类：RAG Context、Retrieved Document、Retrieved Chunk
+- 模型类：Embedding、Evaluation Data、Training Sample、Model Explanation
+- 多模态类：Multimodal Content（图片/音频/视频原始内容）
+- 凭证类：Credential、Secret、API Key
+- 隐私类：Personal Information
+- 商业类：Business Confidential Information
+
+### 6.2 数据分类
+统一采用四级分类体系，并与OCSF Data Classification语义一一映射：
+
+| 分类等级 | OCSF映射 | 定义 | 示例 |
+|----------|----------|------|------|
+| PUBLIC | Public | 公开可访问，无敏感风险 | 模型名称、模型版本、Token用量统计 |
+| INTERNAL | Internal | 内部使用，泄露无实质危害 | 普通接口ID、非敏感配置参数 |
+| CONFIDENTIAL | Confidential | 敏感，泄露会造成不良影响 | 用户Prompt、普通Response、工具参数 |
+| RESTRICTED | Restricted | 高度敏感，泄露会造成严重危害 | 系统提示词、训练数据集、核心工具密钥 |
+
+### 6.3 数据处理等级
+根据敏感级别不同，采用四级处理策略：
+
+#### Level 0：元数据
+- 适用：公开与内部级非敏感信息
+- 处理：允许明文记录完整元数据
+- 示例：Model Name、Model Version、Token Usage、Request ID、Latency、Risk Level
+
+#### Level 1：掩码数据
+- 适用：个人标识类信息（手机号、邮箱、账号、IP、身份证号等）
+- 处理：保留字段结构，对敏感内容进行掩码/部分脱敏，保留可辨识度
+- 要求：掩码算法统一，不可逆推出完整原值
+
+#### Level 2：指纹数据
+- 适用：Prompt、Response、Tool Arguments、RAG Document等需要关联但不需要明文的内容
+- 处理：采用HMAC-SHA-256等密码学指纹，仅记录哈希值、长度、分类
+- 要求：支持内容一致性校验、重复检测、关联分析，不可逆推出原文
+
+#### Level 3：受保护内容
+- 适用：System Prompt、敏感Prompt/Response、Tool Secret、Training Data、原始多模态内容
+- 处理：普通日志中仅记录`content_ref`引用，原文存入Protected Content Vault，严格授权访问
+- 要求：普通日志链路中不出现明文，访问必须全程审计
+
+---
+
+## 七、Content Fingerprint规范
+内容指纹是AI安全日志的核心技术，用于在不记录明文的前提下实现内容关联、重复检测、攻击识别。
+
+### 7.1 精确指纹
+#### 7.1.1 用途
+用于判断两个内容是否完全一致，支持幂等校验、重复内容检测、精确关联。
+
+#### 7.1.2 算法
+推荐采用**HMAC-SHA-256**，带密钥的哈希算法，防止彩虹表逆向还原。
+
+#### 7.1.3 字段结构
+```json
+"content_fingerprint": {
+  "algorithm": "HMAC-SHA256",
+  "key_version": "v2026.07",
+  "scope": "tenant",
+  "fingerprint": "hmac-sha256:7f2c9a3b..."
+}
+```
+
+### 7.2 近似指纹
+#### 7.2.1 用途
+用于Prompt变种检测、攻击模板聚类、重复内容检测，支持微小差异的内容识别。
+
+#### 7.2.2 算法
+可采用SimHash、MinHash等局部敏感哈希算法。
+
+#### 7.2.3 适用场景
+- 同源Prompt的不同表述识别
+- 批量攻击的模板聚类
+- 重复文档去重
+
+### 7.3 语义指纹
+#### 7.3.1 用途
+用于语义相似Prompt识别、攻击模板聚类、RAG内容相似性检测，从语义层面判断内容相近性。
+
+#### 7.3.2 算法要求
+语义指纹算法由企业统一注册，不要求所有第三方采用相同Embedding模型，但必须标注算法版本与模型。
+- 输出维度统一
+- 相似度计算口径统一
+- 支持跨厂商基础比对
+
+### 7.4 密钥管理
+#### 7.4.1 密钥分层
+密钥由KMS统一管理，支持三级密钥体系：
+- `global_key`：全局级，用于跨租户通用指纹
+- `tenant_key`：租户级，租户独立密钥，防止跨租户内容关联
+- `session_key`：会话级，单次会话生成，用完即毁，最高安全等级
+
+#### 7.4.2 密钥轮换
+- 默认密钥轮换周期为90天，可根据安全等级调整
+- 密钥轮换后历史指纹仍可通过`key_version`校验
+- 禁止在日志中记录密钥本身
+
+---
+
+## 八、Protected Content Vault
+### 8.1 基本原则
+敏感原文不得直接进入普通日志存储系统。普通日志中仅保存引用与元数据，原文独立存储于受保护的内容仓库。
+
+普通日志保存的最小信息集：
+`content_ref`、`content_classification`、`content_hash`、`retention_policy`、`expiration_time`、`access_policy`
+
+### 8.2 访问流程
+敏感内容访问必须经过完整的网关校验流程：
+```
+业务系统请求（携带content_ref）
+    ↓
+Access Gateway
+    ↓
+身份认证 + RBAC/ABAC授权
+    ↓
+租户隔离校验
+    ↓
+访问用途校验
+    ↓
+访问决策（允许/拒绝/脱敏）
+    ↓
+Protected Content Vault
+    ↓
+访问审计日志记录
+```
+
+### 8.3 访问审计
+每一次敏感内容访问必须产生独立的Audit事件，记录完整访问上下文。
+
+审计事件必填字段：
+accessor（访问者身份）、tenant（所属租户）、content_ref（访问的内容引用）、purpose（访问用途）、decision（访问决策）、timestamp（访问时间）、authorization_policy（依据的授权策略）、approval_id（审批ID）、result（访问结果）、source_ip（来源IP）。
+
+### 8.4 raw_data治理
+#### 8.4.1 默认策略
+`raw_data`默认关闭，禁止默认携带原始数据。
+
+#### 8.4.2 开启条件
+故障诊断场景如需开启raw_data，必须同时满足：
+- 审批授权：有明确的审批流程与审批人
+- 用途明确：仅用于故障诊断与取证
+- 有效期明确：设置自动关闭时间
+- 访问主体明确：限定可访问的角色与范围
+- 访问全程审计：所有访问操作留痕
+- 内容扫描：必须经过DLP扫描，确认无违规
+- 加密存储：必须加密存储
+
+#### 8.4.3 留存与隔离
+- 默认最大留存周期7天，到期自动删除
+- raw_data禁止进入普通日志主存储池，仅存储于Quarantine区域
+- 不得作为常规安全分析数据源，仅用于排障与取证
+
+---
+
+## 九、AI Trace与Span规范
+### 9.1 Trace模型
+AI调用必须支持分布式追踪标准，至少包含：
+- `trace_id`：全局调用链ID，一次完整用户请求对应一个trace_id
+- `span_id`：单个执行步骤ID
+- `parent_span_id`：父步骤ID，用于构建调用树
+
+兼容OpenTelemetry Trace Context标准，降低接入成本。
+
+### 9.2 Span属性
+每个Span至少支持以下属性，完整描述单个执行环节：
+
+| 字段 | 说明 |
+|------|------|
+| start_time | 步骤开始时间 |
+| end_time | 步骤结束时间 |
+| duration_ms | 执行耗时（毫秒） |
+| status | 执行状态（成功/失败/取消） |
+| span_kind | Span类型 |
+| producer | 生产者 |
+| resource | 关联资源 |
+| actor | 执行主体 |
+
+### 9.3 Span类型
+至少支持以下Span类型，覆盖AI全链路环节：
+`llm_invocation`、`agent_decision`、`guardrail_check`、`rag_retrieval`、`tool_call`、`external_api`、`model_load`、`dataset_access`、`model_deployment`、`content_moderation`。
+
+### 9.4 Trace分层原则
+Trace体系采用三层分工，边界清晰，避免重复建设：
+1. **OpenTelemetry负责**：调用链结构、Span层级关系、时间关系、拓扑还原。解决“如何关联”的问题。
+2. **OCSF负责**：安全事件语义、安全对象、安全分类、严重程度。解决“发生了什么”的问题。
+3. **AI Security Extension负责**：AI安全上下文、风险语义、威胁标签。解决“为什么危险”的问题。
+
+---
+
+## 十、场景A：LLM API调用审计
+### 10.1 场景目标
+完整记录模型调用的核心安全要素：
+- 谁调用模型
+- 调用哪个模型及版本
+- 调用来源
+- Prompt指纹与分类
+- Response指纹与分类
+- Token消耗情况
+- 调用延迟
+- 调用结果
+- 关联的安全检测结果
+
+### 10.2 事件映射
+- 基础事件类：**API Activity**（OCSF class_uid: 6003）
+- 复用Profile/Object：`ai_operation`、`ai_model`、`message_context`
+- 企业扩展：`ent_ai_security`（补充请求ID、延迟、指纹版本等）
+
+### 10.3 完整JSON示例
+```json
+{
+  "event_uid": "0199a2c1-7e42-7b3a-a123-91f3c9c2a001",
+  "time": "2026-09-01T06:12:31.123Z",
+  "category_uid": 6,
+  "class_uid": 6003,
+  "activity_id": 1,
+  "type_uid": 600301,
+  "severity_id": 1,
+  "status_id": 1,
+  "metadata": {
+    "version": "1.9.0",
+    "product": {
+      "name": "AI Gateway",
+      "vendor_name": "Enterprise"
+    },
+    "extension": {
+      "name": "enterprise_ai_security",
+      "version": "2.1.0"
+    }
+  },
+  "actor": {
+    "user": {
+      "uid": "user-827361"
+    }
+  },
+  "cloud": {
+    "account_uid": "tenant-001",
+    "region": "cn-north-1"
+  },
+  "resource": {
+    "uid": "llm-endpoint-qwen",
+    "name": "LLM API Endpoint",
+    "type": "AI Endpoint"
+  },
+  "trace_id": "0199a2c1-7e42-7b3a-9001-000000000001",
+  "span_id": "0199a2c1-7e42-7b3a-9001-000000000002",
+  "ai_operation": {
+    "operation_type": "inference",
+    "token_usage": {
+      "input_tokens": 1832,
+      "output_tokens": 621,
+      "total_tokens": 2453
+    }
+  },
+  "ai_model": {
+    "name": "Qwen",
+    "version": "2026.07",
+    "model_uid": "model:qwen:2026.07"
+  },
+  "message_context": {
+    "input": {
+      "content_type": "text",
+      "content_hash": "hmac-sha256:7f2c9a3b...",
+      "classification": "CONFIDENTIAL"
+    },
+    "output": {
+      "content_type": "text",
+      "content_hash": "hmac-sha256:9ab1c3d...",
+      "classification": "INTERNAL"
+    }
+  },
+  "ent_ai_security": {
+    "request_id": "req-82931",
+    "latency_ms": 843,
+    "prompt_fingerprint_version": "1.0",
+    "response_fingerprint_version": "1.0"
+  }
+}
+```
+
+### 10.4 设计说明
+- 基础字段全部采用OCSF原生语义，保证通用SIEM可直接解析
+- AI核心对象优先复用OCSF v1.9+原生`ai_operation`、`ai_model`、`message_context`
+- 企业扩展字段仅补充OCSF未覆盖的业务与安全属性，前缀明确
+
+---
+
+## 十一、场景B：AI内容安全与风险控制
+### 11.1 典型风险
+覆盖输入输出全链路内容安全风险：
+Prompt Injection（提示注入）、Jailbreak（越狱）、Illegal Content（违法内容）、Sensitive Information（敏感信息泄露）、Malicious Instruction（恶意指令）、RAG Injection（RAG注入）、Tool Abuse（工具滥用）、Data Exfiltration（数据窃取）、Model Abuse（模型滥用）。
+
+### 11.2 事件映射
+- 基础事件类：**Detection Finding**（OCSF class_uid: 2001）
+- 复用Profile/Object：`finding_info`、`security_control`、`ai_operation`
+- 企业扩展：`ent_ai_security`（补充威胁类型、置信度、风险评分、处置动作等）
+
+### 11.3 完整JSON示例
+```json
+{
+  "event_uid": "0199a2c1-7e42-7b3a-a203-91f3c9c2a001",
+  "time": "2026-09-01T06:13:02.211Z",
+  "category_uid": 2,
+  "class_uid": 2001,
+  "activity_id": 1,
+  "type_uid": 200101,
+  "severity_id": 4,
+  "status_id": 1,
+  "metadata": {
+    "version": "1.9.0",
+    "product": {
+      "name": "AI Guardrail",
+      "vendor_name": "Enterprise"
+    },
+    "extension": {
+      "name": "enterprise_ai_security",
+      "version": "2.1.0"
+    }
+  },
+  "trace_id": "0199a2c1-7e42-7b3a-9001-000000000001",
+  "span_id": "0199a2c1-7e42-7b3a-9001-000000000003",
+  "finding_info": {
+    "title": "Prompt Injection Detected",
+    "desc": "Potential indirect prompt injection detected",
+    "uid": "finding-88321"
+  },
+  "ai_operation": {
+    "operation_type": "guardrail_check"
+  },
+  "ent_ai_security": {
+    "threat_type": "PROMPT_INJECTION",
+    "confidence": 0.96,
+    "risk_score": 0.91,
+    "detection_source": "AI Guardrail",
+    "action": "BLOCK",
+    "content_hash": "hmac-sha256:812f3e4a...",
+    "attack_chain_id": "chain-99321"
+  },
+  "related_events": [
+    {
+      "uid": "0199a2c1-7e42-7b3a-a123-91f3c9c2a001",
+      "relation_type": "causal"
+    }
+  ]
+}
+```
+
+---
+
+## 十二、风险评分规范
+### 12.1 拆分原则
+不要求第三方直接提供统一含义的0～1风险分数，避免不同厂商评分标准不一导致的误判。统一拆分为多维度，由企业安全平台统一计算最终风险。
+
+### 12.2 维度定义
+| 维度 | 说明 | 取值范围 |
+|------|------|----------|
+| severity_id | 标准化严重程度，OCSF原生 | 0-4 |
+| confidence | 检测置信度，检测结果的可靠程度 | 0.0-1.0 |
+| risk_score | 企业归一化风险值，企业内部统一校准 | 0.0-1.0 |
+| impact_score | 影响程度，对业务/资产的影响大小 | 0.0-1.0 |
+| likelihood | 发生概率，威胁实际发生的可能性 | 0.0-1.0 |
+| asset_criticality | 资产重要性，被涉及资产的等级 | 0.0-1.0 |
+
+### 12.3 风险计算
+最终风险由企业安全平台统一计算：
+```
+Risk = f(Severity, Confidence, Impact, Likelihood, Asset Criticality)
+```
+推荐采用加权求和或风险矩阵算法。
+
+### 12.4 第三方评分要求
+第三方提供的`risk_score`必须标识：
+- `score_type`：评分类型
+- `score_version`：评分版本
+- `provider`：评分提供者
+- `calibration_version`：校准版本
+
+禁止不同厂商之间直接比较未经校准的风险分值。
+
+---
+
+## 十三、场景C：模型训练与微调
+### 13.1 记录目标
+完整记录模型训练全链路安全要素：
+- Dataset来源与版本
+- 训练任务信息
+- 基础模型与输出模型
+- Adapter信息
+- 训练状态
+- 资源访问情况
+- 异常检测结果
+- 模型完整性校验
+- 操作人与审批信息
+
+### 13.2 事件映射
+- 基础事件类：**Application Activity**（OCSF class_uid: 6002）
+- 复用Profile/Object：`ai_model`、`dataset`
+- 企业扩展：`ent_ai_training`（补充训练详情、异常检测、资源访问等）
+
+### 13.3 完整JSON示例
+```json
+{
+  "event_uid": "0199a2c1-7e42-7b3a-a303-91f3c9c2a001",
+  "time": "2026-09-01T06:15:12.321Z",
+  "category_uid": 6,
+  "class_uid": 6002,
+  "activity_id": 1,
+  "type_uid": 600201,
+  "severity_id": 1,
+  "status_id": 1,
+  "metadata": {
+    "version": "1.9.0",
+    "product": {
+      "name": "AI Training Platform",
+      "vendor_name": "Enterprise"
+    },
+    "extension": {
+      "name": "enterprise_ai_security",
+      "version": "2.1.0"
+    }
+  },
+  "actor": {
+    "user": {
+      "uid": "user-827361"
+    }
+  },
+  "resource": {
+    "uid": "training-job-88231",
+    "name": "finetune-job",
+    "type": "AI Training Job"
+  },
+  "ai_model": {
+    "base_model_uid": "model:qwen:2026.07",
+    "output_model_uid": "model:qwen:enterprise-v12"
+  },
+  "ent_ai_training": {
+    "dataset": {
+      "uid": "dataset:customer-support:v8",
+      "version": "8.0",
+      "source": "enterprise-object-storage",
+      "content_hash": "sha256:abc123def..."
+    },
+    "training": {
+      "status": "RUNNING",
+      "epoch": 7,
+      "total_epoch": 20
+    },
+    "anomaly_detection": {
+      "status": "DETECTED",
+      "anomaly_type": "DATA_POISONING",
+      "confidence": 0.94
+    },
+    "resource_access": {
+      "gpu_cluster": "gpu-cluster-07",
+      "gpu_count": 32
+    }
+  }
+}
+```
+
+---
+
+## 十四、场景D：Agent与Tool Calling
+### 14.1 场景目标
+Agent与Tool Calling是AI安全的核心高风险场景，日志必须完整回答七个核心问题：
+1. 谁调用的？
+2. 哪个Agent发起？
+3. 为什么调用工具？
+4. 调用哪个Tool？
+5. Tool访问了什么资源？
+6. 是否经过授权？
+7. 调用结果与是否越权？
+
+### 14.2 Agent日志规范
+Agent日志至少描述以下字段：
+- agent_id、agent_version、agent_role
+- parent_agent（多级代理场景）
+- delegation：委托信息
+- delegation_depth：委托深度
+- decision：Agent决策结果
+- tool_selection：工具选择依据
+- execution_result：执行结果
+
+### 14.3 Tool日志规范
+Tool日志至少描述以下字段：
+- tool_id、tool_name、tool_type、tool.version
+- arguments_fingerprint：参数指纹
+- result_fingerprint：结果指纹
+- execution_status：执行状态
+- execution_duration：执行耗时
+- authorization_policy：授权策略
+- resource_accessed：访问的资源
+
+### 14.4 委托（Delegation）规范
+- 优先复用当前目标OCSF版本已经正式发布的`delegation`语义
+- 记录字段：delegator（委托方）、delegatee（受托方）、delegated_permission（委托权限）、policy（委托策略）、valid_from、valid_until、delegation_depth、authorization_result
+- 对于尚未进入正式OCSF Release的Agent/MCP扩展，不得标记为OCSF原生字段，而应作为企业Extension管理
+
+### 14.5 完整JSON示例
+```json
+{
+  "event_uid": "0199a2c1-7e42-7b3a-a403-91f3c9c2a001",
+  "time": "2026-09-01T06:16:45.789Z",
+  "category_uid": 6,
+  "class_uid": 6003,
+  "activity_id": 1001,
+  "type_uid": 60031001,
+  "severity_id": 2,
+  "status_id": 1,
+  "metadata": {
+    "version": "1.9.0",
+    "product": {
+      "name": "Agent Runtime",
+      "vendor_name": "Enterprise"
+    },
+    "extension": {
+      "name": "enterprise_ai_security",
+      "version": "2.1.0"
+    }
+  },
+  "actor": {
+    "user": {
+      "uid": "user-827361"
+    }
+  },
+  "trace_id": "0199a2c1-7e42-7b3a-9001-000000000001",
+  "span_id": "0199a2c1-7e42-7b3a-9001-000000000004",
+  "parent_span_id": "0199a2c1-7e42-7b3a-9001-000000000002",
+  "ai_agent": {
+    "id": "agent-finance-01",
+    "version": "3.2",
+    "role": "finance_analyst",
+    "run_id": "run-88271"
+  },
+  "ai_tool": {
+    "id": "tool-db-query",
+    "name": "database_query",
+    "version": "2.1",
+    "call_id": "call-721",
+    "arguments_fingerprint": "hmac-sha256:91af3d7c...",
+    "result_fingerprint": "hmac-sha256:8c11b2e4...",
+    "status": "SUCCESS",
+    "duration_ms": 183
+  },
+  "authorization": {
+    "policy_id": "AI-TOOL-POLICY-01",
+    "decision": "ALLOW"
+  }
+}
+```
+
+---
+
+## 十五、场景E：RAG安全日志规范
+### 15.1 场景目标
+RAG是敏感数据泄露与注入攻击的高发场景，日志必须支撑：
+- 恶意文档识别
+- RAG Injection检测
+- 敏感文档访问审计
+- 知识库越权检测
+- 数据泄露溯源
+- 检索链路完整溯源
+
+### 15.2 核心字段
+RAG事件至少记录：
+knowledge_base_id、vector_store_id、embedding_model、document_id、chunk_id、retriever、similarity_score、retrieval_time、content_classification、content_fingerprint、injection_position、document_risk。
+
+### 15.3 典型攻击链溯源
+通过trace_id、span_id和lineage关系实现完整攻击链关联：
+```
+Malicious Document
+    ↓
+Knowledge Base
+    ↓
+Retriever
+    ↓
+Context
+    ↓
+LLM
+    ↓
+Tool
+    ↓
+Sensitive Data
+```
+每个环节对应独立Span，通过trace_id串联，支持完整还原攻击路径。
+
+---
+
+## 十六、场景F：模型供应链安全
+### 16.1 覆盖范围
+覆盖模型从引入到部署的全供应链节点：
+Model Import（模型导入）、Model Scan（安全扫描）、Model Conversion（格式转换）、Weight Decryption（权重解密）、LoRA Attach（适配器挂载）、Plugin Load（插件加载）、Runtime Injection（运行时注入）、Model Deployment（模型部署）、Model Rollback（模型回滚）。
+
+### 16.2 节点通用字段
+每个供应链节点至少记录：
+artifact_id、source、version、hash、signature、integrity_check、scan_result、operator、approval_id、risk_level。
+
+### 16.3 设计目标
+建立从第三方模型到部署端点的完整供应链溯源：
+> 第三方模型 → 模型Artifact → 安全扫描 → LoRA → Merge → 量化 → 部署 → Endpoint
+
+每个环节可追溯、可校验、可审计，支撑模型投毒、后门植入的检测与溯源。
+
+---
+
+## 十七、场景G：AI资源耗尽与API滥用
+### 17.1 覆盖范围
+V2.1正式纳入AI资源安全事件，重点覆盖：
+Token Exhaustion（Token耗尽攻击）、Context Exhaustion（上下文溢出攻击）、API Abuse（API滥用）、Concurrency Abuse（并发滥用）、Inference Resource Exhaustion（推理资源耗尽）、Agent Loop（Agent死循环）、Tool Storm（工具风暴）。
+
+### 17.2 核心字段
+至少记录：
+resource_exhaustion.type、request_rate、token_consumption_rate、context_size、concurrency、threshold、action、attack_duration、affected_resource。
+
+### 17.3 检测目标
+支撑异常调用频率、异常Token消耗、异常上下文增长等资源型攻击的检测与封禁。
+
+---
+
+## 十八、处置响应事件
+### 18.1 闭环原则
+AI安全日志必须形成“Detection → Decision → Remediation → Verification”的完整闭环。每个检测事件必须可关联到对应的处置动作，每个处置必须有结果验证。
+
+### 18.2 处置类型
+处置类型至少包括：
+BLOCK、RATE_LIMIT、STOP_GENERATION、STOP_TRANSMISSION、ELIMINATE_CONTENT、RECALL_CONTENT、DELETE_CONTENT、ACCOUNT_SUSPEND、TOKEN_REVOKE、MODEL_ROLLBACK、TOOL_DISABLE、AGENT_DISABLE、HUMAN_REVIEW。
+
+### 18.3 处置事件字段
+每个处置事件至少关联：
+trigger_event_uid、finding_uid、action、target、operator、approval_id、execution_time、result、verification_status。
+
+### 18.4 设计说明
+处置事件映射到OCSF原生**Remediation Activity**事件类，不自定义处置事件类型，保证与现有响应体系兼容。
+
+---
+
+## 十九、跨事件关联规范
+### 19.1 关联关系类型
+`related_events`必须支持多种关联类型，覆盖不同关联场景：
+- `parent`：父子关系，上级事件
+- `child`：父子关系，下级事件
+- `causal`：因果关系，前者导致后者
+- `reference`：引用关系，前者被后者引用
+- `aggregate`：聚合关系，后者由前者聚合而成
+
+每个关联项必须包含`uid`与`relation_type`。
+
+### 19.2 Incident关联规则
+一个Incident可以关联多个Finding，形成安全事件聚合。
+关联关系至少包括：
+finding_uid、relation_type、confidence、weight、first_seen、last_seen。
+
+### 19.3 攻击链重建
+通过`attack_chain_id`、`trace_id`、`span_id`、`parent_span_id`、`related_events`实现完整攻击链重建，可还原从攻击入口、检测、决策、工具调用、数据访问、数据泄露到处置的完整链路。
+
+---
+
+## 二十、日志完整性与防篡改
+### 20.1 复用原则
+优先复用OCSF **Record Integrity Profile**，不再定义企业私有的record_hash、previous_record_hash、signature_chain等重复语义。
+
+### 20.2 保护机制
+高安全等级日志采用组合保护方案：
+1. OCSF Record Integrity：标准完整性证明
+2. 数字签名：生产者签名，防伪造
+3. WORM存储：一次写入多次读取，防篡改删除
+4. 访问审计：所有访问操作留痕
+
+### 20.3 设计说明
+OCSF Record Integrity Profile原生支持`attestation`、`signature`、`fingerprint`、`chain_uid`等完整性属性，可直接支撑哈希链与数字签名需求，复用可最大化兼容第三方工具。
+
+---
+
+## 二十一、幂等、乱序与重放
+### 21.1 幂等处理
+- `event_uid`作为全局幂等主键
+- 重复事件不得简单丢弃，系统需要记录`duplicate_count`、`first_seen`、`last_seen`、`source_sequence`
+- 保留重复行为本身的安全证据，便于重放攻击检测
+
+### 21.2 乱序处理
+- `sequence_number`定义为生产者局部序号，不承诺跨生产者全局时序
+- 排序优先级：event_time > trace关系 > span关系 > producer_sequence > ingest_time
+- 支持时间窗口内的乱序重组
+
+### 21.3 重放检测
+高安全事件增加`replay_attack_detected`布尔字段，区分：
+- 网络重试：正常网络波动导致的重传
+- 重复上报：生产者重复发送
+- 恶意重放：攻击者恶意重放日志
+
+不同类型采用不同处理策略。
+
+---
+
+## 二十二、异常处理与降级
+### 22.1 五类处理路径
+日志系统定义五类数据处理路径，覆盖不同异常场景：
+
+| 路径 | 触发场景 | 默认留存 | 处理策略 |
+|------|----------|----------|----------|
+| Normal | 正常校验通过 | 按生命周期策略 | 进入主管道 |
+| Quarantine | Schema校验失败、格式错误 | 7天 | 待人工审核，修正后可转正 |
+| Security Hold | 隐私检测异常、疑似敏感泄露 | 30天 | 安全团队审核，脱敏后放行或销毁 |
+| Dead Letter | 解析失败、无法处理 | 90天 | 研发排查，定期清理 |
+| Local Buffer | 网络故障、传输中断 | 24小时 | 本地缓存，恢复后补传 |
+
+具体留存周期可按照企业合规要求调整。
+
+### 22.2 降级规则
+任何降级事件必须：
+- 设置`degraded = true`标记
+- 记录`degradation_reason`、`original_format`、`processing_stage`、`failure_code`
+
+### 22.3 最小安全字段集（MSES）
+降级情况下必须保留的不可降级安全底线：
+> event_uid、time、producer、event_type、actor、resource、severity_id、trace_id、content_fingerprint、status、degraded、failure_code
+
+任何情况下不得丢失以上字段，保障基础安全能力。
+
+---
+
+## 二十三、日志采集与数据管道
+### 23.1 整体架构
+统一采用十二阶段流水线架构：
+```
+采集 → 传输 → 接入网关 → Schema Validation → 标准化 → Privacy/DLP → Threat Enrichment → Integrity Verification → Routing → Storage → Detection → Analytics → Archive
+```
+
+### 23.2 各阶段职责
+1. **采集**：从AI Gateway、LLM API、Agent Runtime等源产生原始日志
+2. **传输**：通过加密通道传输
+3. **接入网关**：身份认证、签名验证、反重放、限流
+4. **Schema Validation**：格式校验、字段校验、枚举校验
+5. **标准化**：厂商格式转换为标准OCSF+AI扩展
+6. **Privacy/DLP**：敏感数据检测、脱敏、指纹化、分类
+7. **Threat Enrichment**：威胁情报补充、风险评分
+8. **Integrity Verification**：完整性校验、签名校验
+9. **Routing**：按类型/级别路由到不同存储与处理管道
+10. **Storage**：分层存储
+11. **Detection**：实时检测规则运行
+12. **Analytics**：关联分析、攻击链分析
+13. **Archive**：合规归档
+
+### 23.3 传输协议
+第三方必须支持TLS 1.2+，推荐TLS 1.3。
+支持协议：HTTPS、Syslog over TLS、Kafka over TLS等企业批准协议。
+
+### 23.4 身份认证
+推荐认证方式：mTLS、OAuth 2.0、签名认证。
+API Key不作为高安全场景唯一认证手段。
+
+### 23.5 防重放
+必须支持timestamp + nonce + signature + event_uid的组合防重放机制。
+
+### 23.6 批量上报
+- 实时安全事件：秒级上报
+- 普通审计日志：≤60秒批量上报
+- 批量补传：≤5分钟
+具体SLA由服务等级确定。
+
+---
+
+## 二十四、采集失败与容错
+### 24.1 采集失败处理
+- 本地缓存 + 指数退避重试
+- 超过重试阈值进入Dead Letter队列
+- 禁止直接丢弃，保证数据不丢失
+
+### 24.2 标准化失败处理
+- 保留原始事件
+- 标记degraded
+- 进入Quarantine或Fallback Pipeline
+- 不得因为格式错误丢弃高危安全事件
+
+### 24.3 隐私检测失败处理
+- 高风险内容默认阻断
+- 低风险内容可标记后放行并告警
+- 任何情况下不得因为“日志格式错误”而直接丢弃高危安全事件
+
+---
+
+## 二十五、存储架构
+采用分层存储架构，兼顾性能、成本与合规。
+
+### 25.1 分层策略
+| 存储层级 | 建议留存周期 | 性能要求 | 适用场景 |
+|----------|--------------|----------|----------|
+| Hot Store | 7天 | 秒级查询 | 实时检测、告警、安全运营 |
+| Warm Store | 7天 ~ 6个月 | 分钟级查询 | 事件调查、威胁狩猎、审计 |
+| Cold Archive | 6个月 ~ 3年 | 小时级查询 | 合规留存、历史分析 |
+| Protected Content Vault | 按法规要求 | 需审批访问 | 敏感原文存储 |
+
+### 25.2 通用要求
+所有存储必须支持：
+- 传输加密 + 静态加密
+- 细粒度访问控制
+- 全量访问审计
+- 生命周期管理
+- 安全销毁（符合数据擦除标准）
+
+### 25.3 隔离要求
+敏感原文与普通日志物理或逻辑强隔离，普通权限无法访问。
+
+---
+
+## 二十六、日志系统自身可观测性
+### 26.1 核心监控指标
+必须监控日志系统全链路指标：
+- 采集量、成功率、丢弃率、重复率
+- 解析错误率、Schema错误率、隐私拦截率
+- Quarantine数量、Dead Letter数量
+- 端到端延迟P50/P90/P99
+- 存储使用率、压缩比、查询延迟
+- 权限拒绝率、Vault访问量
+- 日志延迟分布
+
+### 26.2 自身异常监控
+日志系统自身异常必须能够产生安全运维事件，纳入统一告警体系，包括管道中断告警、采集成功率下降告警、大量Schema错误告警、异常丢弃告警、存储容量告警。
+
+---
+
+## 二十七、第三方AI服务商接入规范
+### 27.1 接入必测项
+第三方接入必须通过以下测试：
+Schema Validation、OCSF Mapping、AI Extension Validation、Privacy Validation、Integrity Validation、Replay Protection、Idempotency Test、Performance Test、Failure Recovery Test、Cross-border Test。
+
+### 27.2 认证等级
+#### L1：基础Schema认证
+- Mandatory Field完整率100%
+- JSON格式错误率0%
+- 非法Enum值为0
+
+#### L2：OCSF兼容认证
+- OCSF原生字段映射率≥95%
+- 禁止自定义核心Event Class
+- type_uid完全符合OCSF规则
+
+#### L3：AI安全认证
+- AI扩展字段覆盖率≥95%
+- AI威胁映射准确率≥90%
+- 敏感数据治理通过率100%
+
+#### L4：可信日志认证
+- 完整性验证100%
+- 防重放测试100%
+- 幂等测试100%
+- 隐私测试100%
+- 数据丢失测试100%
+
+---
+
+## 二十八、第三方认证生命周期
+### 28.1 有效期
+认证有效期默认1年。
+
+### 28.2 重新认证触发
+以下情况必须重新认证：
+- 重大Schema变化
+- 重大模型服务变化
+- 日志格式变化
+- 安全架构变化
+- 数据跨境区域变化
+- 重大隐私违规
+- 重大日志丢失事故
+
+### 28.3 质量评分
+企业建立第三方日志质量评分体系，维度包括：
+Schema Score、Privacy Score、Integrity Score、Availability Score、Completeness Score、Security Coverage Score。
+定期发布评分结果，作为服务商准入与考核依据。
+
+---
+
+## 二十九、AI威胁分类体系
+### 29.1 三层映射
+建立“AI Threat → OCSF Detection Finding → MITRE ATLAS”三层映射，打通威胁分类标准。
+- AI Threat：AI场景特有的威胁名称
+- OCSF Detection Finding：标准安全检测事件
+- MITRE ATLAS：通用AI攻击框架
+
+### 29.2 核心威胁列表
+第一阶段核心威胁：
+PROMPT_INJECTION、JAILBREAK、DATA_POISONING、MODEL_THEFT、MODEL_MANIPULATION、RAG_INJECTION、TOOL_ABUSE、AGENT_ABUSE、API_ABUSE、CREDENTIAL_ABUSE、SENSITIVE_DATA_LEAKAGE、RESOURCE_EXHAUSTION、SUPPLY_CHAIN_ATTACK、MALICIOUS_PLUGIN、RUNTIME_INJECTION。
+
+### 29.3 威胁记录字段
+企业威胁分类必须记录：
+threat_type、technique_id、framework、confidence、severity、risk_score、detection_source。
+
+---
+
+## 三十、合规与隐私检查清单
+第三方必须逐项确认以下合规项：
+1. 是否记录用户输入？
+2. 是否记录用户输出？
+3. 是否默认保存Prompt原文？
+4. 是否默认保存Response原文？
+5. 是否记录System Prompt？
+6. 是否记录Tool Arguments？
+7. 是否记录Tool Results？
+8. 是否包含个人信息？
+9. 是否支持字段级脱敏？
+10. 是否支持HMAC指纹？
+11. 是否支持敏感内容隔离？
+12. 是否支持访问审计？
+13. 是否支持自动销毁？
+14. 是否支持租户隔离？
+15. 是否支持区域化存储？
+16. 是否存在跨境传输？
+17. 跨境是否经过审批？
+18. 跨境数据是否最小化？
+19. 是否支持数据主体请求？
+20. 是否支持删除、更正、查询等数据权利请求审计？
+21. 是否支持安全事件处置记录？
+22. 是否支持停止生成？
+23. 是否支持停止传输？
+24. 是否支持内容消除？
+25. 是否支持内容召回？
+
+---
+
+## 三十一、数据主体权利事件
+### 31.1 事件定义
+增加DSR（Data Subject Request）事件，用于记录个人信息主体的权利请求与处理。
+
+### 31.2 请求类型
+覆盖：查询、访问、更正、删除、撤回授权、数据导出等。
+
+### 31.3 事件字段
+事件至少包含：
+request_id、subject_id、request_type、request_time、scope、operator、result、completion_time、approval_id、audit_id。
+
+### 31.4 合规价值
+支撑《个人信息保护法》等法规要求的数据主体权利响应与审计。
+
+---
+
+## 三十二、跨境数据治理
+### 32.1 跨境控制点
+所有跨境日志传输必须经过Regional Boundary Gateway，统一管控。
+
+### 32.2 跨境数据白名单
+允许跨境的数据默认限定为：
+event_uid、event_type、timestamp、severity、risk_level、aggregated_statistics、经过批准的脱敏元数据。
+
+### 32.3 禁止跨境内容
+默认禁止跨境传输：
+Prompt原文、Response原文、System Prompt、Tool Secret、Training Sample、个人敏感信息。
+
+### 32.4 指纹跨境判定
+指纹也不得因为“是Hash”而自动视为可跨境。必须根据可识别性、可逆性、关联能力、数据敏感等级、业务必要性进行判定。高风险指纹禁止出境。
+
+### 32.5 跨境审计
+所有跨境行为必须产生`cross_border_transfer`审计事件，记录完整传输上下文。
+
+---
+
+## 三十三、多模态扩展
+### 33.1 定位
+多模态作为V2.2重点扩展方向，V2.1预留架构支持。
+
+### 33.2 内容类型
+支持：text、image、audio、video、multimodal。
+
+### 33.3 记录原则
+多模态日志原则上不记录原始二进制内容。
+主要记录：
+content_type、content_size、content_hash、perceptual_hash、feature_fingerprint、classification、risk_level、detection_result、content_ref。
+
+---
+
+## 三十四、性能与采样策略
+### 34.1 自适应采样
+不采用固定比例采样，采用**Security-aware Adaptive Sampling**（安全感知自适应采样）：
+- 正常业务流量：可采样
+- 高风险用户：提高采样率或全量
+- 高价值资产访问：全量
+- 异常事件：全量
+- 高危Trace：全量
+- 安全事件关联Trace：全量
+- 普通性能Trace：按资源成本动态采样
+
+### 34.2 性能优化
+日志系统应支持：
+- Span Aggregation：Span聚合，减少日志量
+- Batch Hash：批量哈希，提升性能
+- Compression：传输与存储压缩
+- Columnar Storage：列式存储，优化查询与压缩比
+
+---
+
+## 三十五、Schema演进治理
+### 35.1 版本规则
+采用语义化版本（Major.Minor.Patch）：
+- Major：不兼容变更
+- Minor：新增兼容字段
+- Patch：Bug修复
+
+### 35.2 新增与废弃规则
+- 新增字段默认必须可选，不得强制要求
+- 已发布字段不得直接删除
+- 字段废弃必须经过至少两个Minor版本过渡期
+- deprecated字段必须标明：deprecated_since、replacement、migration_guide、removal_version
+
+### 35.3 重大升级支持
+重大版本升级必须提供：
+Migration Adapter（迁移适配器）、Schema Diff（版本差异）、Compatibility Matrix（兼容矩阵）、Test Dataset（测试数据集）。
+保障平滑升级，不中断业务。
+
+---
+
+## 三十六、扩展字段注册中心
+### 36.1 管理原则
+所有企业Extension必须进入统一注册中心集中管理。任何部门和第三方不得私自创建公共扩展字段。
+
+### 36.2 注册内容
+extension_id、prefix、field_name、owner、version、description、data_type、classification、retention、source、compatibility、status、deprecation_date。
+
+### 36.3 价值
+避免扩展字段冲突，保证全企业范围内语义一致，便于跨部门对接。
+
+---
+
+## 三十七、AI安全日志最小字段集
+### 37.1 定义
+任何情况下，包括降级、异常和第三方格式错误，至少必须保留的安全字段，称为**Minimum Security Event Set**，简称MSES。
+
+### 37.2 字段清单
+```
+event_uid、time、producer、event_type、actor、resource、severity_id、trace_id、content_fingerprint、status、degraded、failure_code
+```
+
+### 37.3 地位
+MSES是日志系统不可降级的安全底线。任何故障、降级、异常场景都不得突破该底线。
+
+---
+
+## 三十八、规范落地路线图
+### 第一阶段：基础能力建设（P0）
+完成核心基础能力，解决“能不能统一记录和检测”的问题：
+- OCSF版本基线确定
+- Event Class映射规范
+- AI Profile映射
+- LLM API调用日志规范
+- AI内容安全日志规范
+- Agent/Tool Calling日志规范
+- Trace/Span规范
+- 隐私治理与Vault机制
+- 第三方Schema认证体系
+
+### 第二阶段：溯源与治理能力建设（P1）
+完成完整溯源与治理能力，解决“能不能完整溯源”的问题：
+- RAG安全日志
+- AI资源耗尽检测
+- 模型供应链安全
+- AI数据血缘（Lineage）
+- 跨境数据治理
+- 处置响应闭环
+- Incident事件聚合
+
+### 第三阶段：高级运营能力建设（P2）
+完成高级AI安全运营能力，解决“能不能进行高级AI安全运营”的问题：
+- 多模态安全日志
+- MCP协议日志
+- A2A（Agent-to-Agent）安全
+- 高级Delegation治理
+- 高级Agent安全
+- AI取证（AI Forensics）
+- 高级威胁情报
+
+---
+
+## 三十九、最终目标
+本规范最终形成“八个一”标准体系：
+- 一套OCSF标准核心
+- 一套AI语义扩展
+- 一套AI安全威胁模型
+- 一套AI数据血缘模型
+- 一套敏感数据治理体系
+- 一套可信日志体系
+- 一套第三方认证体系
+- 一套AI安全运营体系
+
+最终实现：不同云厂商、不同AI模型、不同AI平台、不同Agent、不同Tool、不同RAG、不同第三方AI服务，都能够被统一转换为**统一事件语义、统一安全语义、统一AI语义、统一身份语义、统一资产语义、统一风险语义、统一证据链**。
+
+最终形成“OCSF统一事实层 + AI统一语义层 + Security统一检测层 + Lineage统一溯源层 + Governance统一治理层 + SOC统一运营层”的六层架构。
+
+使公有云AI安全日志从传统的“记录发生了什么”，升级为：
+> **记录谁在什么环境下，通过什么AI资产，执行了什么操作，经过什么Agent/Model/RAG/Tool链路，产生了什么安全风险，影响了什么资源，采取了什么处置措施，以及整个证据链是否可信。**
+
+这也是《公有云AI安全事件日志与语义规范》V2.1的核心价值。
